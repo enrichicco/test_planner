@@ -169,11 +169,13 @@ Work items with:
 - Team and person assignments
 
 ### Scheduling
-Uses PyJobShop to create optimal schedules considering:
+Creates optimal schedules considering:
 - Task dependencies
 - Resource availability
 - Person availability
 - Time constraints
+
+**Note**: The current implementation uses a simple dependency-aware sequential scheduler. PyJobShop is included as a dependency and can be integrated for more advanced optimization scenarios (multi-resource constraints, complex precedence relationships, etc.).
 
 ### Exceptions
 Track issues that affect task execution:

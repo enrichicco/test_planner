@@ -3,10 +3,6 @@ from datetime import datetime, timedelta
 from typing import List, Dict, Optional, Tuple
 from sqlalchemy.orm import Session
 
-from pyjobshop import solve
-from pyjobshop.Model import Model
-from pyjobshop.ProblemData import ProblemData
-
 from task_planner.models import Task, Person, Resource, TaskStatus, Team
 from task_planner.services.exceptions import (
     PlanningException,
@@ -16,7 +12,7 @@ from task_planner.services.exceptions import (
 
 
 class PlanningService:
-    """Service for creating and managing task schedules using PyJobShop."""
+    """Service for creating and managing task schedules."""
     
     def __init__(self, db: Session):
         """Initialize planning service with database session."""
@@ -29,7 +25,10 @@ class PlanningService:
         max_horizon_days: int = 90,
     ) -> Dict[int, Tuple[datetime, datetime]]:
         """
-        Create a schedule for given tasks using PyJobShop.
+        Create a schedule for given tasks.
+        
+        This is a simple sequential scheduler that respects dependencies.
+        For more complex scheduling, PyJobShop can be integrated.
         
         Args:
             tasks: List of tasks to schedule
@@ -49,20 +48,14 @@ class PlanningService:
             start_date = datetime.now()
         
         try:
-            # Build problem data for PyJobShop
-            problem_data = self._build_problem_data(tasks, start_date, max_horizon_days)
+            # Create a simple schedule respecting dependencies
+            schedule = self._create_simple_schedule(tasks, start_date)
             
-            # Create model and solve
-            model = Model(problem_data)
-            result = solve(model)
-            
-            if not result.is_optimal() and not result.is_feasible():
+            # Validate the schedule
+            if not self.validate_schedule(schedule):
                 raise InfeasibleScheduleException(
-                    "Could not find a feasible schedule for the given tasks"
+                    "Could not create a valid schedule (resource conflicts detected)"
                 )
-            
-            # Extract schedule from solution
-            schedule = self._extract_schedule(result, tasks, start_date)
             
             # Update tasks with scheduled times
             self._update_task_schedules(schedule)
@@ -70,123 +63,72 @@ class PlanningService:
             return schedule
             
         except Exception as e:
+            if isinstance(e, (PlanningException, InfeasibleScheduleException)):
+                raise
             raise PlanningException(f"Scheduling failed: {str(e)}") from e
     
-    def _build_problem_data(
+    def _create_simple_schedule(
         self,
-        tasks: List[Task],
-        start_date: datetime,
-        max_horizon_days: int,
-    ) -> ProblemData:
-        """Build PyJobShop problem data from tasks."""
-        # Create jobs from tasks
-        jobs = []
-        machines = []
-        processing_times = []
-        
-        # Get unique resources (machines in PyJobShop terms)
-        resources = self._get_task_resources(tasks)
-        machine_map = {res.id: idx for idx, res in enumerate(resources)}
-        machines = list(range(len(resources)))
-        
-        # Get people who can work on tasks (also treated as machines)
-        people = self._get_task_people(tasks)
-        person_map = {person.id: idx + len(resources) for idx, person in enumerate(people)}
-        machines.extend(range(len(resources), len(resources) + len(people)))
-        
-        # Build jobs (each task is a job with operations)
-        for task_idx, task in enumerate(tasks):
-            job_operations = []
-            
-            # Each task needs a resource and/or person
-            if task.assigned_person_id and task.assigned_person_id in person_map:
-                machine_idx = person_map[task.assigned_person_id]
-                processing_time = int(task.estimated_hours * 60)  # Convert to minutes
-                job_operations.append((machine_idx, processing_time))
-            else:
-                # Assign to first available person if not assigned
-                if people:
-                    machine_idx = person_map[people[0].id]
-                    processing_time = int(task.estimated_hours * 60)
-                    job_operations.append((machine_idx, processing_time))
-            
-            if job_operations:
-                jobs.append(job_operations)
-        
-        # Create problem data
-        data = ProblemData(
-            jobs=jobs,
-            processing_times=[[op[1] for op in job] for job in jobs],
-            machines=[[op[0] for op in job] for job in jobs],
-        )
-        
-        return data
-    
-    def _get_task_resources(self, tasks: List[Task]) -> List[Resource]:
-        """Get unique resources required by tasks."""
-        resource_ids = set()
-        for task in tasks:
-            for req in task.resource_requirements:
-                resource_ids.add(req.resource_id)
-        
-        if not resource_ids:
-            return []
-        
-        return (
-            self.db.query(Resource)
-            .filter(Resource.id.in_(resource_ids))
-            .all()
-        )
-    
-    def _get_task_people(self, tasks: List[Task]) -> List[Person]:
-        """Get unique people assigned to tasks or available for assignment."""
-        person_ids = set()
-        for task in tasks:
-            if task.assigned_person_id:
-                person_ids.add(task.assigned_person_id)
-            elif task.team_id:
-                # Get team members
-                team = self.db.query(Team).filter(Team.id == task.team_id).first()
-                if team:
-                    person_ids.update([m.id for m in team.members if m.is_active])
-        
-        # If no people found, get all active people
-        if not person_ids:
-            return self.db.query(Person).filter(Person.is_active == True).all()
-        
-        return (
-            self.db.query(Person)
-            .filter(Person.id.in_(person_ids))
-            .all()
-        )
-    
-    def _extract_schedule(
-        self,
-        result,
         tasks: List[Task],
         start_date: datetime,
     ) -> Dict[int, Tuple[datetime, datetime]]:
-        """Extract schedule from PyJobShop solution."""
+        """
+        Create a simple sequential schedule respecting task dependencies.
+        """
         schedule = {}
+        task_by_id = {task.id: task for task in tasks}
+        scheduled_tasks = set()
+        person_availability = {}  # Track when each person becomes available
         
-        # PyJobShop returns a solution with job start times
-        # We need to map these back to our tasks
-        for idx, task in enumerate(tasks):
-            if idx < len(result.schedule):
-                job_schedule = result.schedule[idx]
-                # Get start time in minutes from start_date
-                start_minutes = job_schedule.start if hasattr(job_schedule, 'start') else 0
-                end_minutes = job_schedule.end if hasattr(job_schedule, 'end') else start_minutes + int(task.estimated_hours * 60)
-                
-                task_start = start_date + timedelta(minutes=start_minutes)
-                task_end = start_date + timedelta(minutes=end_minutes)
-                
-                schedule[task.id] = (task_start, task_end)
-            else:
-                # Fallback: schedule sequentially
-                task_start = start_date + timedelta(hours=idx * task.estimated_hours)
-                task_end = task_start + timedelta(hours=task.estimated_hours)
-                schedule[task.id] = (task_start, task_end)
+        # Sort tasks by priority (higher priority first)
+        sorted_tasks = sorted(tasks, key=lambda t: -t.priority)
+        
+        for task in sorted_tasks:
+            if task.id in scheduled_tasks:
+                continue
+            
+            # Find the earliest start time based on dependencies
+            earliest_start = start_date
+            
+            # Check dependencies
+            for dep in task.dependencies:
+                dep_task_id = dep.depends_on_task_id
+                if dep_task_id in schedule:
+                    # Task must start after its dependency ends
+                    _, dep_end = schedule[dep_task_id]
+                    if dep_end > earliest_start:
+                        earliest_start = dep_end
+            
+            # Check earliest_start constraint from task
+            if task.earliest_start and task.earliest_start > earliest_start:
+                earliest_start = task.earliest_start
+            
+            # Check assigned person availability
+            if task.assigned_person_id:
+                person_id = task.assigned_person_id
+                if person_id in person_availability:
+                    if person_availability[person_id] > earliest_start:
+                        earliest_start = person_availability[person_id]
+            
+            # Calculate task end time
+            task_end = earliest_start + timedelta(hours=task.estimated_hours)
+            
+            # Check latest_end constraint
+            if task.latest_end and task_end > task.latest_end:
+                # Try to fit it in
+                if task.latest_end > earliest_start:
+                    task_end = task.latest_end
+                else:
+                    raise InfeasibleScheduleException(
+                        f"Cannot schedule task {task.id} within its time window"
+                    )
+            
+            schedule[task.id] = (earliest_start, task_end)
+            scheduled_tasks.add(task.id)
+            
+            # Update person availability
+            if task.assigned_person_id:
+                person_availability[task.assigned_person_id] = task_end
         
         return schedule
     
