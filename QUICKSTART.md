@@ -14,7 +14,7 @@ This guide will help you get started with the Task Planner Service quickly.
 2. **Install dependencies**
 
    ```bash
-   pip install -r requirements.txt
+   uv sync
    ```
 
 3. **Configure your environment**

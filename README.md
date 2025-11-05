@@ -32,9 +32,7 @@ A comprehensive task planning service built with Python, using PyJobShop for int
 2. Install dependencies:
 
     ```bash
-    pip install -r requirements.txt
-    # or
-    pip install -e .
+    uv sync
     ```
 
 3. Configure the database:
