@@ -5,17 +5,20 @@ This guide will help you get started with the Task Planner Service quickly.
 ## Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/enrichicco/test_planner.git
    cd test_planner
    ```
 
 2. **Install dependencies**
+
    ```bash
    pip install -r requirements.txt
    ```
 
 3. **Configure your environment**
+
    ```bash
    cp .env.example .env
    # Edit .env to configure your database connection
@@ -122,6 +125,7 @@ python examples/basic_usage.py
 ```
 
 This will demonstrate:
+
 - Creating teams, people, and resources
 - Adding skills to people
 - Creating tasks with dependencies
@@ -177,12 +181,14 @@ task_service.update_task_status(task.id, TaskStatus.COMPLETED)
 ## Database Configuration
 
 ### SQLite (Development/Testing)
-```
+
+```env
 DATABASE_URL=sqlite:///task_planner.db
 ```
 
 ### PostgreSQL (Production)
-```
+
+```env
 DATABASE_URL=postgresql://user:password@localhost:5432/task_planner
 ```
 
@@ -196,4 +202,4 @@ DATABASE_URL=postgresql://user:password@localhost:5432/task_planner
 ## Support
 
 For issues, questions, or contributions, please visit:
-https://github.com/enrichicco/test_planner
+<https://github.com/enrichicco/test_planner>

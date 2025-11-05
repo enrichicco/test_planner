@@ -1,4 +1,5 @@
 """Utility functions package."""
+
 from task_planner.utils.database import (
     get_db,
     get_db_session,

@@ -1,4 +1,5 @@
 """Database utilities and connection management."""
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 from contextlib import contextmanager

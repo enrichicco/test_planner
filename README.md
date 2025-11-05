@@ -23,27 +23,31 @@ A comprehensive task planning service built with Python, using PyJobShop for int
 ### Setup
 
 1. Clone the repository:
-```bash
-git clone https://github.com/enrichicco/test_planner.git
-cd test_planner
-```
+
+    ```bash
+    git clone https://github.com/enrichicco/test_planner.git
+    cd test_planner
+    ```
 
 2. Install dependencies:
-```bash
-pip install -r requirements.txt
-# or
-pip install -e .
-```
+
+    ```bash
+    pip install -r requirements.txt
+    # or
+    pip install -e .
+    ```
 
 3. Configure the database:
-   
+
    Copy `.env.example` to `.env` and update the database URL:
+
    ```bash
    cp .env.example .env
    ```
-   
+
    Edit `.env`:
-   ```
+
+   ```env
    DATABASE_URL=postgresql://user:password@localhost:5432/task_planner
    DEBUG=False
    MAX_PLANNING_HORIZON_DAYS=90
@@ -51,6 +55,7 @@ pip install -e .
    ```
 
 4. Initialize the database:
+
    ```python
    from task_planner import init_db
    init_db()
@@ -118,7 +123,7 @@ print(summary)
 
 ## Project Structure
 
-```
+```text
 test_planner/
 ├── src/
 │   └── task_planner/
@@ -143,7 +148,6 @@ test_planner/
 │   └── basic_usage.py            # Example usage script
 ├── tests/                        # Test files
 ├── requirements.txt              # Python dependencies
-├── setup.py                      # Package setup
 ├── pyproject.toml               # Project configuration
 └── README.md                     # This file
 ```
@@ -151,16 +155,21 @@ test_planner/
 ## Core Concepts
 
 ### Teams
+
 Teams are groups of people working together. A person can belong to multiple teams.
 
 ### People
+
 Individuals with skills, availability, and task assignments. Track their workload and utilization.
 
 ### Resources
+
 Equipment, materials, skills, or facilities needed for tasks. Monitor availability and utilization.
 
 ### Tasks
+
 Work items with:
+
 - Estimated and actual hours
 - Priority levels
 - Status tracking (pending, scheduled, in progress, completed, etc.)
@@ -169,7 +178,9 @@ Work items with:
 - Team and person assignments
 
 ### Scheduling
+
 Creates optimal schedules considering:
+
 - Task dependencies
 - Resource availability
 - Person availability
@@ -178,7 +189,9 @@ Creates optimal schedules considering:
 **Note**: The current implementation uses a simple dependency-aware sequential scheduler. PyJobShop is included as a dependency and can be integrated for more advanced optimization scenarios (multi-resource constraints, complex precedence relationships, etc.).
 
 ### Exceptions
+
 Track issues that affect task execution:
+
 - Resource unavailability
 - Delays
 - Scope changes
@@ -187,6 +200,7 @@ Track issues that affect task execution:
 ## Services
 
 ### TeamService
+
 - `create_team()` - Create a new team
 - `get_team()` - Get team by ID
 - `add_member()` - Add person to team
@@ -195,6 +209,7 @@ Track issues that affect task execution:
 - `delete_team()` - Delete team
 
 ### PersonService
+
 - `create_person()` - Create a new person
 - `get_person()` - Get person by ID
 - `add_skill()` - Add skill to person
@@ -203,6 +218,7 @@ Track issues that affect task execution:
 - `delete_person()` - Soft delete person
 
 ### ResourceService
+
 - `create_resource()` - Create a new resource
 - `get_resource()` - Get resource by ID
 - `get_all_resources()` - List all resources
@@ -210,6 +226,7 @@ Track issues that affect task execution:
 - `delete_resource()` - Delete resource
 
 ### TaskService
+
 - `create_task()` - Create a new task
 - `get_task()` - Get task by ID
 - `add_resource_requirement()` - Add resource to task
@@ -221,11 +238,13 @@ Track issues that affect task execution:
 - `delete_task()` - Delete task
 
 ### PlanningService
+
 - `create_schedule()` - Create optimized schedule for tasks
 - `reschedule_task()` - Reschedule task and dependencies
 - `validate_schedule()` - Validate schedule for conflicts
 
 ### ReportGenerator
+
 - `generate_task_summary()` - Task statistics and status
 - `generate_person_workload_report()` - Person utilization
 - `generate_resource_utilization_report()` - Resource usage
@@ -238,6 +257,7 @@ Track issues that affect task execution:
 See the `examples/basic_usage.py` file for a comprehensive example demonstrating all features.
 
 Run it with:
+
 ```bash
 python examples/basic_usage.py
 ```
