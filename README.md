@@ -25,8 +25,8 @@ A comprehensive task planning service built with Python, using PyJobShop for int
 1. Clone the repository:
 
     ```bash
-    git clone https://github.com/enrichicco/test_planner.git
-    cd test_planner
+    git clone https://gitlab.othernet.boh:11443/testgroup/mcr_planner.git
+    cd mcr_planner
     ```
 
 2. Install dependencies:
@@ -124,7 +124,7 @@ print(summary)
 ## Project Structure
 
 ```text
-test_planner/
+mcr_planner/
 ├── src/
 │   └── task_planner/
 │       ├── __init__.py          # Main package exports

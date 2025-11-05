@@ -7,8 +7,8 @@ This guide will help you get started with the Task Planner Service quickly.
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/enrichicco/test_planner.git
-   cd test_planner
+   git clone https://gitlab.othernet.boh:11443/testgroup/mcr_planner.git
+   cd mcr_planner
    ```
 
 2. **Install dependencies**
@@ -202,4 +202,4 @@ DATABASE_URL=postgresql://user:password@localhost:5432/task_planner
 ## Support
 
 For issues, questions, or contributions, please visit:
-<https://github.com/enrichicco/test_planner>
+<https://gitlab.othernet.boh:11443/testgroup/mcr_planner>
