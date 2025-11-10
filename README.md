@@ -29,13 +29,19 @@ A comprehensive task planning service built with Python, using PyJobShop for int
     cd mcr_planner
     ```
 
-2. Install dependencies:
+2. Setup Git hooks:
+
+    ```bash
+    pre-commit install
+    ```
+
+3. Install dependencies:
 
     ```bash
     uv sync
     ```
 
-3. Configure the database:
+4. Configure the database:
 
    Copy `.env.example` to `.env` and update the database URL:
 
@@ -52,7 +58,7 @@ A comprehensive task planning service built with Python, using PyJobShop for int
    DEFAULT_WORKING_HOURS_PER_DAY=8
    ```
 
-4. Initialize the database:
+5. Initialize the database:
 
    ```python
    from task_planner import init_db
@@ -257,7 +263,7 @@ See the `examples/basic_usage.py` file for a comprehensive example demonstrating
 Run it with:
 
 ```bash
-python examples/basic_usage.py
+uv run examples/basic_usage.py
 ```
 
 ## Database Models
@@ -294,7 +300,7 @@ pytest tests/
 
 ```bash
 # Format code
-black src/
+ruff format src/
 
 # Lint code
 ruff check src/
