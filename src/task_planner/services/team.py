@@ -1,9 +1,10 @@
 """Service for managing teams."""
 
 from typing import List, Optional
+
 from sqlalchemy.orm import Session
 
-from task_planner.models import Team, Person
+from task_planner.models import Person, Team
 from task_planner.services.exceptions import ValidationException
 
 

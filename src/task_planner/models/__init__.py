@@ -1,7 +1,9 @@
 """Database models for task planner service."""
 
+import enum
 from datetime import datetime, timezone
 from typing import List, Optional
+
 from sqlalchemy import (
     Boolean,
     Column,
@@ -15,7 +17,6 @@ from sqlalchemy import (
     Text,
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-import enum
 
 
 class Base(DeclarativeBase):

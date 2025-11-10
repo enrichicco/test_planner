@@ -12,15 +12,16 @@ This script demonstrates:
 """
 
 from datetime import datetime
+
 from task_planner import (
-    init_db,
-    get_db_session,
-    TeamService,
     PersonService,
-    ResourceService,
-    TaskService,
     PlanningService,
     ReportGenerator,
+    ResourceService,
+    TaskService,
+    TeamService,
+    get_db_session,
+    init_db,
 )
 from task_planner.models import ResourceType, TaskStatus
 

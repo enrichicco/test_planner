@@ -2,14 +2,15 @@
 
 from datetime import datetime, timezone
 from typing import List, Optional
+
 from sqlalchemy.orm import Session
 
 from task_planner.models import (
     Task,
-    TaskStatus,
-    TaskResource,
     TaskDependency,
     TaskException,
+    TaskResource,
+    TaskStatus,
 )
 from task_planner.services.exceptions import ValidationException
 

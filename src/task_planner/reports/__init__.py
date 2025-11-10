@@ -1,10 +1,11 @@
 """Report generation for task planner."""
 
 from datetime import datetime
-from typing import List, Dict, Any, Optional
+from typing import Any, Dict, List, Optional
+
 from sqlalchemy.orm import Session
 
-from task_planner.models import Task, Person, Team, Resource, TaskStatus
+from task_planner.models import Person, Resource, Task, TaskStatus, Team
 
 
 class ReportGenerator:

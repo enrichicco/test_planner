@@ -1,13 +1,13 @@
 """Database utilities and connection management."""
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, Session
 from contextlib import contextmanager
 from typing import Generator
 
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session, sessionmaker
+
 from task_planner.config import settings
 from task_planner.models import Base
-
 
 # Create engine
 engine = create_engine(

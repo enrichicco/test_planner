@@ -1,6 +1,7 @@
 """Service for managing resources."""
 
 from typing import List, Optional
+
 from sqlalchemy.orm import Session
 
 from task_planner.models import Resource, ResourceType

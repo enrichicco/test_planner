@@ -1,13 +1,14 @@
 """Planning service using PyJobShop for task scheduling."""
 
 from datetime import datetime, timedelta
-from typing import List, Dict, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
+
 from sqlalchemy.orm import Session
 
 from task_planner.models import Task, TaskStatus
 from task_planner.services.exceptions import (
-    PlanningException,
     InfeasibleScheduleException,
+    PlanningException,
 )
 
 

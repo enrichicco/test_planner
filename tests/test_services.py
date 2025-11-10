@@ -1,20 +1,21 @@
 """Tests for the task planner service."""
 
-import pytest
 from datetime import datetime
+from typing import Any, Generator
+
+import pytest
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.orm import Session, sessionmaker
 
 from task_planner.models import Base, ResourceType, TaskStatus
+from task_planner.reports import ReportGenerator
 from task_planner.services import (
-    TeamService,
     PersonService,
+    PlanningService,
     ResourceService,
     TaskService,
-    PlanningService,
+    TeamService,
 )
-from task_planner.reports import ReportGenerator
-from typing import Any, Generator
 
 
 @pytest.fixture  # type: ignore[misc]

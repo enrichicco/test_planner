@@ -1,6 +1,7 @@
 """Service for managing people."""
 
 from typing import List, Optional
+
 from sqlalchemy.orm import Session
 
 from task_planner.models import Person, Resource
