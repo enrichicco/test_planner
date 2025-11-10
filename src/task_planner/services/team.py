@@ -18,8 +18,9 @@ class TeamService:
         """Create a new team."""
         # Check if team with name already exists
         existing = self.db.query(Team).filter(Team.name == name).first()
+
         if existing:
-            raise ValidationException(f"Team with name {name} already exists")
+            return existing
 
         team = Team(name=name, description=description)
         self.db.add(team)
