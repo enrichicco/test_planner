@@ -25,7 +25,7 @@ class PersonService:
         # Check if person with email already exists
         existing = self.db.query(Person).filter(Person.email == email).first()
         if existing:
-            raise ValidationException(f"Person with email '{email}' already exists")
+            raise ValidationException(f"Person with email {email} already exists")
 
         person = Person(
             name=name,
