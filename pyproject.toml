@@ -26,7 +26,6 @@ target-version = "py310"
 [tool.mypy]
 strict = true
 ignore_missing_imports = true
-show_error_codes = true
 
 [dependency-groups]
 dev = [
