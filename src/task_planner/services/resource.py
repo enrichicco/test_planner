@@ -79,7 +79,7 @@ class ResourceService:
         self.db.refresh(resource)
         return resource
 
-    def delete_resource(self, resource_id: int):
+    def delete_resource(self, resource_id: int) -> None:
         """Delete a resource."""
         resource = self.get_resource(resource_id)
         if not resource:

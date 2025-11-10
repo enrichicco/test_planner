@@ -25,7 +25,7 @@ from task_planner import (
 from task_planner.models import ResourceType, TaskStatus
 
 
-def main():
+def main() -> None:
     """Run the example."""
     print("=" * 80)
     print("Task Planner Service - Example Usage")

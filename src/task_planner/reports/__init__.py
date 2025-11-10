@@ -53,7 +53,7 @@ class ReportGenerator:
         """Generate workload report for all active people."""
         people = self.db.query(Person).filter(Person.is_active).all()
 
-        report = []
+        report: List[Dict[str, int | str | float]] = []
         for person in people:
             # Get assigned tasks that are not completed
             active_tasks = [
@@ -87,7 +87,7 @@ class ReportGenerator:
         """Generate resource utilization report."""
         resources = self.db.query(Resource).all()
 
-        report = []
+        report: List[Dict[str, str | int | float]] = []
         for resource in resources:
             # Get tasks using this resource
             active_requirements = [
@@ -167,7 +167,7 @@ class ReportGenerator:
         )
 
         # Group by date
-        schedule_by_date = {}
+        schedule_by_date: Dict[str, List[Dict[str, int | str | float | None]]] = {}
         for task in tasks:
             if task.scheduled_start:
                 date_key = task.scheduled_start.date().isoformat()

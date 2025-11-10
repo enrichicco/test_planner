@@ -50,7 +50,7 @@ class PersonService:
             query = query.filter(Person.is_active)
         return query.all()
 
-    def add_skill(self, person_id: int, resource_id: int):
+    def add_skill(self, person_id: int, resource_id: int) -> None:
         """Add a skill (resource) to a person."""
         person = self.get_person(person_id)
         if not person:
@@ -64,7 +64,7 @@ class PersonService:
             person.skills.append(resource)
             self.db.commit()
 
-    def remove_skill(self, person_id: int, resource_id: int):
+    def remove_skill(self, person_id: int, resource_id: int) -> None:
         """Remove a skill (resource) from a person."""
         person = self.get_person(person_id)
         if not person:
@@ -107,7 +107,7 @@ class PersonService:
         self.db.refresh(person)
         return person
 
-    def delete_person(self, person_id: int):
+    def delete_person(self, person_id: int) -> None:
         """Delete a person (soft delete by marking inactive)."""
         person = self.get_person(person_id)
         if not person:

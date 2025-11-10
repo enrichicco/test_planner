@@ -75,7 +75,7 @@ class TaskService:
         task_id: int,
         resource_id: int,
         quantity: float = 1.0,
-    ):
+    ) -> None:
         """Add a resource requirement to a task."""
         task = self.get_task(task_id)
         if not task:
@@ -94,7 +94,7 @@ class TaskService:
         task_id: int,
         depends_on_task_id: int,
         dependency_type: str = "finish_to_start",
-    ):
+    ) -> None:
         """Add a dependency between tasks."""
         task = self.get_task(task_id)
         if not task:
@@ -166,7 +166,7 @@ class TaskService:
         self,
         exception_id: int,
         resolution_notes: str,
-    ):
+    ) -> None:
         """Resolve a task exception."""
         exception = self.db.query(TaskException).filter(TaskException.id == exception_id).first()
         if not exception:
@@ -224,7 +224,7 @@ class TaskService:
         self.db.refresh(task)
         return task
 
-    def delete_task(self, task_id: int):
+    def delete_task(self, task_id: int) -> None:
         """Delete a task."""
         task = self.get_task(task_id)
         if not task:

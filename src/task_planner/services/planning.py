@@ -75,10 +75,10 @@ class PlanningService:
         """
         Create a simple sequential schedule respecting task dependencies.
         """
-        schedule = {}
+        schedule: Dict[int, Tuple[datetime, datetime]] = {}
         # task_by_id = {task.id: task for task in tasks}
         scheduled_tasks = set()
-        person_availability = {}  # Track when each person becomes available
+        person_availability: Dict[int, datetime] = {}  # Track when each person becomes available
 
         # Sort tasks by priority (higher priority first)
         sorted_tasks = sorted(tasks, key=lambda t: -t.priority)
@@ -132,7 +132,7 @@ class PlanningService:
 
         return schedule
 
-    def _update_task_schedules(self, schedule: Dict[int, Tuple[datetime, datetime]]):
+    def _update_task_schedules(self, schedule: Dict[int, Tuple[datetime, datetime]]) -> None:
         """Update task records with scheduled times."""
         for task_id, (start_time, end_time) in schedule.items():
             task = self.db.query(Task).filter(Task.id == task_id).first()
@@ -197,7 +197,7 @@ class PlanningService:
             True if valid, False otherwise
         """
         # Check for resource conflicts
-        resource_usage = {}
+        resource_usage: Dict[int, List[Tuple[datetime, datetime]]] = {}
 
         for task_id, (start_time, end_time) in schedule.items():
             task = self.db.query(Task).filter(Task.id == task_id).first()

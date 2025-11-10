@@ -77,7 +77,7 @@ class Team(Base):
     members: Mapped[List["Person"]] = relationship(secondary=team_members, back_populates="teams")
     tasks: Mapped[List["Task"]] = relationship(back_populates="team")
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<Team(id={self.id}, name={self.name!r})>"
 
 
@@ -104,7 +104,7 @@ class Person(Base):
     )
     assigned_tasks: Mapped[List["Task"]] = relationship(back_populates="assigned_person")
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<Person(id={self.id}, name={self.name!r}, email={self.email!r})>"
 
 
@@ -130,7 +130,7 @@ class Resource(Base):
     )
     task_requirements: Mapped[List["TaskResource"]] = relationship(back_populates="resource")
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<Resource(id={self.id}, name={self.name!r}, type={self.type.value!r})>"
 
 
@@ -188,7 +188,7 @@ class Task(Base):
         back_populates="task", cascade="all, delete-orphan"
     )
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<Task(id={self.id}, name={self.name!r}, status={self.status.value!r})>"
 
 
@@ -206,7 +206,7 @@ class TaskResource(Base):
     task: Mapped["Task"] = relationship(back_populates="resource_requirements")
     resource: Mapped["Resource"] = relationship(back_populates="task_requirements")
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<TaskResource(task_id={self.task_id}, resource_id={self.resource_id})>"
 
 
@@ -228,7 +228,7 @@ class TaskDependency(Base):
         foreign_keys=[depends_on_task_id], back_populates="dependent_on"
     )
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<TaskDependency(task_id={self.task_id}, depends_on={self.depends_on_task_id})>"
 
 
@@ -249,7 +249,7 @@ class TaskException(Base):
     # Relationships
     task: Mapped["Task"] = relationship(back_populates="exceptions")
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (
             f"<TaskException(id={self.id}, task_id={self.task_id}, type={self.exception_type!r})>"
         )
@@ -271,5 +271,5 @@ class Schedule(Base):
         DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc)
     )
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<Schedule(id={self.id}, name={self.name!r})>"

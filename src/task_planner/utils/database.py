@@ -20,12 +20,12 @@ engine = create_engine(
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
-def init_db():
+def init_db() -> None:
     """Initialize database by creating all tables."""
     Base.metadata.create_all(bind=engine)
 
 
-def drop_db():
+def drop_db() -> None:
     """Drop all tables (use with caution!)."""
     Base.metadata.drop_all(bind=engine)
 

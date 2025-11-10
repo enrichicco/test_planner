@@ -36,7 +36,7 @@ class TeamService:
         """Get all teams."""
         return self.db.query(Team).all()
 
-    def add_member(self, team_id: int, person_id: int):
+    def add_member(self, team_id: int, person_id: int) -> None:
         """Add a person to a team."""
         team = self.get_team(team_id)
         if not team:
@@ -50,7 +50,7 @@ class TeamService:
             team.members.append(person)
             self.db.commit()
 
-    def remove_member(self, team_id: int, person_id: int):
+    def remove_member(self, team_id: int, person_id: int) -> None:
         """Remove a person from a team."""
         team = self.get_team(team_id)
         if not team:
@@ -81,7 +81,7 @@ class TeamService:
         self.db.refresh(team)
         return team
 
-    def delete_team(self, team_id: int):
+    def delete_team(self, team_id: int) -> None:
         """Delete a team."""
         team = self.get_team(team_id)
         if not team:
