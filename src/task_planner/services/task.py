@@ -1,6 +1,6 @@
 """Service for managing tasks."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional
 from sqlalchemy.orm import Session
 
@@ -187,9 +187,9 @@ class TaskService:
 
         # Update actual times based on status
         if status == TaskStatus.IN_PROGRESS and not task.actual_start:
-            task.actual_start = datetime.utcnow()
+            task.actual_start = datetime.now(timezone.utc)
         elif status == TaskStatus.COMPLETED and not task.actual_end:
-            task.actual_end = datetime.utcnow()
+            task.actual_end = datetime.now(timezone.utc)
 
         self.db.commit()
         self.db.refresh(task)
