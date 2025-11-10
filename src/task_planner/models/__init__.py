@@ -78,7 +78,7 @@ class Team(Base):
     tasks: Mapped[List["Task"]] = relationship(back_populates="team")
 
     def __repr__(self):
-        return f"<Team(id={self.id}, name='{self.name}')>"
+        return f"<Team(id={self.id}, name={self.name!r})>"
 
 
 class Person(Base):
@@ -105,7 +105,7 @@ class Person(Base):
     assigned_tasks: Mapped[List["Task"]] = relationship(back_populates="assigned_person")
 
     def __repr__(self):
-        return f"<Person(id={self.id}, name='{self.name}', email='{self.email}')>"
+        return f"<Person(id={self.id}, name={self.name!r}, email={self.email!r})>"
 
 
 class Resource(Base):
@@ -131,7 +131,7 @@ class Resource(Base):
     task_requirements: Mapped[List["TaskResource"]] = relationship(back_populates="resource")
 
     def __repr__(self):
-        return f"<Resource(id={self.id}, name='{self.name}', type='{self.type.value}')>"
+        return f"<Resource(id={self.id}, name={self.name!r}, type={self.type.value!r})>"
 
 
 class Task(Base):
@@ -189,7 +189,7 @@ class Task(Base):
     )
 
     def __repr__(self):
-        return f"<Task(id={self.id}, name='{self.name}', status='{self.status.value}')>"
+        return f"<Task(id={self.id}, name={self.name!r}, status={self.status.value!r})>"
 
 
 class TaskResource(Base):
@@ -251,7 +251,7 @@ class TaskException(Base):
 
     def __repr__(self):
         return (
-            f"<TaskException(id={self.id}, task_id={self.task_id}, type='{self.exception_type}')>"
+            f"<TaskException(id={self.id}, task_id={self.task_id}, type={self.exception_type!r})>"
         )
 
 
@@ -272,4 +272,4 @@ class Schedule(Base):
     )
 
     def __repr__(self):
-        return f"<Schedule(id={self.id}, name='{self.name}')>"
+        return f"<Schedule(id={self.id}, name={self.name!r})>"
