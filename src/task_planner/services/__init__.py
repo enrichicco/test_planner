@@ -1,29 +1,13 @@
-"""Services package for task planner."""
-
-from task_planner.services.exceptions import (
-    DatabaseException,
-    InfeasibleScheduleException,
-    PlannerException,
-    PlanningException,
-    ResourceConflictException,
-    ValidationException,
-)
-from task_planner.services.person import PersonService
-from task_planner.services.planning import PlanningService
-from task_planner.services.resource import ResourceService
-from task_planner.services.task import TaskService
-from task_planner.services.team import TeamService
+from .scheduling_service import SchedulingService
+from .team_service import TeamService
+from .person_service import PersonService
+from .resource_service import ResourceService
+from .task_service import TaskService
 
 __all__ = [
+    "SchedulingService",
     "TeamService",
     "PersonService",
     "ResourceService",
     "TaskService",
-    "PlanningService",
-    "PlannerException",
-    "PlanningException",
-    "ResourceConflictException",
-    "InfeasibleScheduleException",
-    "ValidationException",
-    "DatabaseException",
 ]
