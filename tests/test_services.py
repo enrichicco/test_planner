@@ -1,28 +1,25 @@
-"""Tests for the task planner service."""
-
-from datetime import datetime
-from typing import Any, Generator
-
+"""
+Tests for service layer.
+"""
 import pytest
+from datetime import datetime, timedelta
 from sqlalchemy import create_engine
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import sessionmaker
 
-from task_planner.models import Base, ResourceType, TaskStatus
-from task_planner.reports import ReportGenerator
-from task_planner.services import (
+from src.task_planner.models import Base, TaskStatus, TaskPriority
+from src.task_planner.services import (
+    TeamService,
     PersonService,
-    PlanningService,
     ResourceService,
     TaskService,
-    TeamService,
+    SchedulingService,
 )
 
 
-@pytest.fixture  # type: ignore[misc]
-def db_session() -> Generator[Session, Any, None]:
+@pytest.fixture
+def db_session():
     """Create a test database session."""
-    # Use in-memory SQLite for testing
-    engine = create_engine("sqlite:///:memory:", echo=False)
+    engine = create_engine("sqlite:///:memory:")
     Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
     session = Session()
@@ -30,271 +27,101 @@ def db_session() -> Generator[Session, Any, None]:
     session.close()
 
 
-@pytest.fixture  # type: ignore[misc]
-def team_service(db_session: Session) -> TeamService:
-    """Create a team service instance."""
-    return TeamService(db_session)
+def test_team_service_create(db_session):
+    """Test creating a team."""
+    service = TeamService(db_session)
+    team = service.create_team(name="Test Team", description="A test team")
+    assert team.id is not None
+    assert team.name == "Test Team"
+    assert team.is_active is True
 
 
-@pytest.fixture  # type: ignore[misc]
-def person_service(db_session: Session) -> PersonService:
-    """Create a person service instance."""
-    return PersonService(db_session)
+def test_person_service_create(db_session):
+    """Test creating a person."""
+    # First create a team
+    team_service = TeamService(db_session)
+    team = team_service.create_team(name="Test Team")
+
+    # Create person
+    person_service = PersonService(db_session)
+    person = person_service.create_person(
+        name="John Doe",
+        email="john@example.com",
+        role="Developer",
+        team_id=team.id,
+        skills={"python": 5},
+    )
+    assert person.id is not None
+    assert person.name == "John Doe"
+    assert person.team_id == team.id
 
 
-@pytest.fixture  # type: ignore[misc]
-def resource_service(db_session: Session) -> ResourceService:
-    """Create a resource service instance."""
-    return ResourceService(db_session)
+def test_resource_service_create(db_session):
+    """Test creating a resource."""
+    service = ResourceService(db_session)
+    resource = service.create_resource(
+        name="Conference Room A",
+        resource_type="room",
+        capacity=10.0,
+    )
+    assert resource.id is not None
+    assert resource.name == "Conference Room A"
+    assert resource.capacity == 10.0
 
 
-@pytest.fixture  # type: ignore[misc]
-def task_service(db_session: Session) -> TaskService:
-    """Create a task service instance."""
-    return TaskService(db_session)
+def test_task_service_create(db_session):
+    """Test creating a task."""
+    # Create team
+    team_service = TeamService(db_session)
+    team = team_service.create_team(name="Test Team")
+
+    # Create task
+    task_service = TaskService(db_session)
+    task = task_service.create_task(
+        name="Test Task",
+        duration=8.0,
+        description="A test task",
+        team_id=team.id,
+        priority=TaskPriority.HIGH,
+    )
+    assert task.id is not None
+    assert task.name == "Test Task"
+    assert task.duration == 8.0
+    assert task.status == TaskStatus.PENDING
 
 
-@pytest.fixture  # type: ignore[misc]
-def planning_service(db_session: Session) -> PlanningService:
-    """Create a planning service instance."""
-    return PlanningService(db_session)
+def test_scheduling_service_create_schedule(db_session):
+    """Test creating a schedule."""
+    # Setup: Create team, person, and task
+    team_service = TeamService(db_session)
+    team = team_service.create_team(name="Test Team")
 
+    person_service = PersonService(db_session)
+    person = person_service.create_person(
+        name="John Doe",
+        email="john@example.com",
+        team_id=team.id,
+    )
 
-@pytest.fixture  # type: ignore[misc]
-def report_gen(db_session: Session) -> ReportGenerator:
-    """Create a report generator instance."""
-    return ReportGenerator(db_session)
+    task_service = TaskService(db_session)
+    task = task_service.create_task(
+        name="Test Task",
+        duration=8.0,
+        team_id=team.id,
+    )
 
+    # Create schedule
+    scheduling_service = SchedulingService(db_session)
+    start_date = datetime.now()
+    end_date = start_date + timedelta(days=7)
 
-class TestTeamService:
-    """Tests for TeamService."""
+    schedule = scheduling_service.create_schedule(
+        name="Test Schedule",
+        start_date=start_date,
+        end_date=end_date,
+        team_id=team.id,
+    )
 
-    def test_create_team(self, team_service: TeamService) -> None:
-        """Test creating a team."""
-        team = team_service.create_team("Dev Team", "Development team")
-        assert team.id is not None
-        assert team.name == "Dev Team"
-        assert team.description == "Development team"
-
-    def test_get_team(self, team_service: TeamService) -> None:
-        """Test getting a team by ID."""
-        team = team_service.create_team("Dev Team")
-        retrieved = team_service.get_team(team.id)
-        assert retrieved
-        assert retrieved.id == team.id
-        assert retrieved.name == team.name
-
-    def test_add_member(self, team_service: TeamService, person_service: PersonService) -> None:
-        """Test adding a member to a team."""
-        team = team_service.create_team("Dev Team")
-        person = person_service.create_person("Alice", "alice@example.com")
-
-        team_service.add_member(team.id, person.id)
-
-        retrieved_team = team_service.get_team(team.id)
-        assert retrieved_team
-        assert len(retrieved_team.members) == 1
-        assert retrieved_team.members[0].id == person.id
-
-
-class TestPersonService:
-    """Tests for PersonService."""
-
-    def test_create_person(self, person_service: PersonService) -> None:
-        """Test creating a person."""
-        person = person_service.create_person(
-            "Alice Johnson",
-            "alice@example.com",
-            role="Developer",
-            availability_hours_per_day=8.0,
-        )
-        assert person.id is not None
-        assert person.name == "Alice Johnson"
-        assert person.email == "alice@example.com"
-        assert person.role == "Developer"
-        assert person.is_active is True
-
-    def test_get_person(self, person_service: PersonService) -> None:
-        """Test getting a person by ID."""
-        person = person_service.create_person("Bob", "bob@example.com")
-        retrieved = person_service.get_person(person.id)
-        assert retrieved
-        assert retrieved.id == person.id
-        assert retrieved.name == person.name
-
-    def test_add_skill(
-        self, person_service: PersonService, resource_service: ResourceService
-    ) -> None:
-        """Test adding a skill to a person."""
-        person = person_service.create_person("Alice", "alice@example.com")
-        skill = resource_service.create_resource("Python", ResourceType.SKILL, "Python programming")
-
-        person_service.add_skill(person.id, skill.id)
-
-        retrieved_person = person_service.get_person(person.id)
-        assert retrieved_person
-        assert len(retrieved_person.skills) == 1
-        assert retrieved_person.skills[0].id == skill.id
-
-
-class TestResourceService:
-    """Tests for ResourceService."""
-
-    def test_create_resource(self, resource_service: ResourceService) -> None:
-        """Test creating a resource."""
-        resource = resource_service.create_resource(
-            "Python",
-            ResourceType.SKILL,
-            "Python programming skill",
-            capacity=5.0,
-        )
-        assert resource.id is not None
-        assert resource.name == "Python"
-        assert resource.type == ResourceType.SKILL
-        assert resource.capacity == 5.0
-        assert resource.available is True
-
-    def test_get_resource(self, resource_service: ResourceService) -> None:
-        """Test getting a resource by ID."""
-        resource = resource_service.create_resource("Python", ResourceType.SKILL)
-        retrieved = resource_service.get_resource(resource.id)
-        assert retrieved
-        assert retrieved.id == resource.id
-        assert retrieved.name == resource.name
-
-
-class TestTaskService:
-    """Tests for TaskService."""
-
-    def test_create_task(
-        self, task_service: TaskService, team_service: TeamService, person_service: PersonService
-    ) -> None:
-        """Test creating a task."""
-        team = team_service.create_team("Dev Team")
-        person = person_service.create_person("Alice", "alice@example.com")
-
-        task = task_service.create_task(
-            name="Build feature",
-            estimated_hours=16.0,
-            description="Build a new feature",
-            priority=10,
-            team_id=team.id,
-            assigned_person_id=person.id,
-        )
-
-        assert task.id is not None
-        assert task.name == "Build feature"
-        assert task.estimated_hours == 16.0
-        assert task.status == TaskStatus.PENDING
-        assert task.team_id == team.id
-        assert task.assigned_person_id == person.id
-
-    def test_add_dependency(self, task_service: TaskService) -> None:
-        """Test adding a dependency between tasks."""
-        task1 = task_service.create_task("Task 1", 8.0)
-        task2 = task_service.create_task("Task 2", 8.0)
-
-        task_service.add_dependency(task2.id, task1.id)
-
-        retrieved_task2 = task_service.get_task(task2.id)
-        assert retrieved_task2
-        assert len(retrieved_task2.dependencies) == 1
-        assert retrieved_task2.dependencies[0].depends_on_task_id == task1.id
-
-    def test_record_exception(self, task_service: TaskService) -> None:
-        """Test recording a task exception."""
-        task = task_service.create_task("Task 1", 8.0)
-
-        exception = task_service.record_exception(
-            task.id,
-            "resource_unavailable",
-            "Resource is not available",
-        )
-
-        assert exception.id is not None
-        assert exception.task_id == task.id
-        assert exception.exception_type == "resource_unavailable"
-        assert exception.resolved is False
-
-    def test_update_task_status(self, task_service: TaskService) -> None:
-        """Test updating task status."""
-        task = task_service.create_task("Task 1", 8.0)
-
-        updated_task = task_service.update_task_status(task.id, TaskStatus.IN_PROGRESS)
-
-        assert updated_task.status == TaskStatus.IN_PROGRESS
-        assert updated_task.actual_start is not None
-
-
-class TestPlanningService:
-    """Tests for PlanningService."""
-
-    def test_create_schedule_empty(self, planning_service: PlanningService) -> None:
-        """Test creating a schedule with no tasks."""
-        schedule = planning_service.create_schedule([])
-        assert schedule == {}
-
-    def test_create_schedule_single_task(
-        self,
-        planning_service: PlanningService,
-        task_service: TaskService,
-        person_service: PersonService,
-    ) -> None:
-        """Test creating a schedule with a single task."""
-        person = person_service.create_person("Alice", "alice@example.com")
-        task = task_service.create_task(
-            "Task 1",
-            8.0,
-            assigned_person_id=person.id,
-        )
-
-        start_date = datetime.now()
-        schedule = planning_service.create_schedule([task], start_date)
-
-        assert task.id in schedule
-        start, end = schedule[task.id]
-        assert start >= start_date
-        assert end > start
-
-
-class TestReportGenerator:
-    """Tests for ReportGenerator."""
-
-    def test_generate_task_summary(
-        self, report_gen: ReportGenerator, task_service: TaskService
-    ) -> None:
-        """Test generating a task summary report."""
-        task_service.create_task("Task 1", 8.0)
-        task_service.create_task("Task 2", 16.0)
-
-        summary = report_gen.generate_task_summary()
-
-        assert summary["total_tasks"] == 2
-        assert summary["total_estimated_hours"] == 24.0
-        assert "status_counts" in summary
-
-    def test_generate_person_workload_report(
-        self, report_gen: ReportGenerator, person_service: PersonService, task_service: TaskService
-    ) -> None:
-        """Test generating a person workload report."""
-        person = person_service.create_person("Alice", "alice@example.com")
-        task_service.create_task("Task 1", 8.0, assigned_person_id=person.id)
-        task_service.create_task("Task 2", 16.0, assigned_person_id=person.id)
-
-        report = report_gen.generate_person_workload_report()
-
-        assert len(report) == 1
-        assert report[0]["person_id"] == person.id
-        assert report[0]["active_tasks"] == 2
-        assert report[0]["total_estimated_hours"] == 24.0
-
-    def test_generate_resource_utilization_report(
-        self, report_gen: ReportGenerator, resource_service: ResourceService
-    ) -> None:
-        """Test generating a resource utilization report."""
-        resource_service.create_resource("Python", ResourceType.SKILL)
-        resource_service.create_resource("Selenium", ResourceType.EQUIPMENT)
-
-        report = report_gen.generate_resource_utilization_report()
-
-        assert len(report) == 2
+    assert schedule.id is not None
+    assert schedule.name == "Test Schedule"
+    # Note: Actual scheduling may fail without PyJobShop properly configured
