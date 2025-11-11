@@ -11,6 +11,9 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
     # Database settings
+    # Default connects to the customer's a2rp schema database
+    # Format: postgresql://user:password@host:port/database
+    # Example: postgresql://postgres:postgres@localhost:5432/a2rp_database
     database_url: str = "postgresql://postgres:postgres@localhost:5432/task_planner"
     database_echo: bool = False
 
