@@ -12,9 +12,10 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from src.task_planner.models.base import Base
+from src.task_planner.models.a2rp.base import A2RPBase
 from src.task_planner.config import settings
 
-# Import all models to ensure they're registered with Base
+# Import all old application models (if still needed)
 from src.task_planner.models import (
     Team,
     Person,
@@ -23,6 +24,45 @@ from src.task_planner.models import (
     Assignment,
     Schedule,
     ScheduleException,
+)
+
+# Import all a2rp schema models
+from src.task_planner.models.a2rp import (
+    # Lookups
+    ProjectStatus,
+    ProjectType,
+    TaskStatus,
+    ResourceStatus,
+    ResourceType,
+    ProcessingOrderStatus,
+    ProcessingOrderType,
+    CostType,
+    Job,
+    NtAccount,
+    Property,
+    # Organizational
+    CostCenter,
+    CostItem,
+    Customer,
+    Imputation,
+    OrganizationalUnit,
+    TechnicalFeature,
+    WorkBreakdownStructure,
+    ResourceBreakdownStructure,
+    # Core
+    Project,
+    Task as A2RPTask,
+    Resource as A2RPResource,
+    Assignment as A2RPAssignment,
+    AssignmentByMonth,
+    # Supporting
+    ProcessingOrder,
+    HistoricalProjectSummary,
+    HistoricalProjectSummaryResource,
+    ProjectToPlan,
+    ProjectToPlanOrganizationalUnit,
+    TaskToPlan,
+    TaskToPlanOrganizationalUnit,
 )
 
 # this is the Alembic Config object, which provides
@@ -39,7 +79,19 @@ if config.config_file_name is not None:
 
 # add your model's MetaData object here
 # for 'autogenerate' support
-target_metadata = Base.metadata
+# Combine metadata from both Base classes to track all tables
+from sqlalchemy import MetaData
+
+combined_metadata = MetaData()
+
+# Merge tables from both bases
+for table in Base.metadata.tables.values():
+    table.to_metadata(combined_metadata)
+
+for table in A2RPBase.metadata.tables.values():
+    table.to_metadata(combined_metadata)
+
+target_metadata = combined_metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
