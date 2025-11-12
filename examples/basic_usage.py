@@ -13,17 +13,17 @@ This script demonstrates:
 
 from datetime import datetime
 
-from task_planner import (
+from task_planner.models import TaskStatus
+from task_planner.models.a2rp import ResourceType
+from task_planner.reports import ReportGenerator
+from task_planner.services import (
     PersonService,
     PlanningService,
-    ReportGenerator,
     ResourceService,
     TaskService,
     TeamService,
-    get_db_session,
-    init_db,
 )
-from task_planner.models import ResourceType, TaskStatus
+from task_planner.utils import get_db_session, init_db
 
 
 def main() -> None:
@@ -71,19 +71,16 @@ def main() -> None:
             name="Alice Johnson",
             email="alice@example.com",
             role="Senior Developer",
-            availability_hours_per_day=8.0,
         )
         bob = person_service.create_person(
             name="Bob Smith",
             email="bob@example.com",
             role="Developer",
-            availability_hours_per_day=8.0,
         )
         charlie = person_service.create_person(
             name="Charlie Davis",
             email="charlie@example.com",
             role="QA Engineer",
-            availability_hours_per_day=8.0,
         )
         print(f"   ✓ Created person: {alice.name}")
         print(f"   ✓ Created person: {bob.name}")

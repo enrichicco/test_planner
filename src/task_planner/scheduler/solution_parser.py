@@ -3,10 +3,12 @@ Solution parser for converting PyJobShop solutions back to database models.
 """
 
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Tuple
+from typing import TYPE_CHECKING, Any, Dict, List, Tuple
 
 from ..models import Assignment, Task
-from . import ProblemBuilder
+
+if TYPE_CHECKING:
+    from .problem_builder import ProblemBuilder
 
 
 class SolutionParser:

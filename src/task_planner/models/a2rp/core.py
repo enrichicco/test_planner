@@ -5,7 +5,7 @@ Includes Project, Task, Resource, and Assignment models.
 
 from datetime import date, datetime
 from decimal import Decimal
-from typing import List, Optional
+from typing import TYPE_CHECKING, List, Optional
 
 from sqlalchemy import (
     Boolean,
@@ -19,26 +19,28 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from . import (
-    A2RPBase,
-    CostCenter,
-    Customer,
-    Imputation,
+from .base import A2RPBase, RevisionMixin, TimestampMixin
+from .lookups import (
     Job,
     NtAccount,
-    OrganizationalUnit,
-    ProcessingOrder,
     ProjectStatus,
     ProjectType,
     Property,
-    ResourceBreakdownStructure,
     ResourceStatus,
     ResourceType,
-    RevisionMixin,
     TaskStatus,
+)
+from .organizational import (
+    CostCenter,
+    Customer,
+    Imputation,
+    OrganizationalUnit,
+    ResourceBreakdownStructure,
     WorkBreakdownStructure,
 )
-from .base import TimestampMixin
+
+if TYPE_CHECKING:
+    from .supporting import ProcessingOrder
 
 
 class Project(A2RPBase, TimestampMixin, RevisionMixin):

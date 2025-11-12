@@ -4,13 +4,17 @@ Task model for representing work items to be scheduled.
 
 import enum
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from sqlalchemy import JSON, DateTime, Enum, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from . import Assignment, Schedule, Team
 from .base import Base, TimestampMixin
+
+if TYPE_CHECKING:
+    from .assignment import Assignment
+    from .schedule import Schedule
+    from .team import Team
 
 
 class TaskStatus(enum.Enum):

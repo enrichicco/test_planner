@@ -2,13 +2,15 @@
 Resource model for representing equipment, tools, and other resources.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from sqlalchemy import JSON, Boolean, Float, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from . import Assignment
 from .base import Base, TimestampMixin
+
+if TYPE_CHECKING:
+    from .assignment import Assignment
 
 
 class Resource(Base, TimestampMixin):

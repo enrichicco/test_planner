@@ -46,4 +46,5 @@ def get_db() -> Generator[Session, None, None]:
 
 def get_db_session() -> Session:
     """Get a new database session."""
-    return SessionLocal()
+    session: Session = SessionLocal()
+    return session

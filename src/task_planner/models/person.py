@@ -2,16 +2,19 @@
 Person model for representing team members.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from sqlalchemy import JSON, Boolean, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from . import Assignment, Team
-from .base import Base, TimestampMixin
+from task_planner.models.base import Base, TimestampMixin
+
+if TYPE_CHECKING:
+    from .assignment import Assignment
+    from .team import Team
 
 
-class Person(Base, TimestampMixin):
+class Person(Base, TimestampMixin):  # type: ignore[misc]
     """Represents a person who can be assigned to tasks."""
 
     __tablename__ = "people"

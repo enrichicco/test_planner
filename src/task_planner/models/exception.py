@@ -4,13 +4,16 @@ Exception model for tracking scheduling conflicts and issues.
 
 import enum
 from datetime import datetime
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 from sqlalchemy import DateTime, Enum, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from . import Schedule, Task
 from .base import Base, TimestampMixin
+
+if TYPE_CHECKING:
+    from .schedule import Schedule
+    from .task import Task
 
 
 class ExceptionType(enum.Enum):

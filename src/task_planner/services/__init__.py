@@ -1,4 +1,5 @@
 from .person_service import PersonService
+from .planning import PlanningService
 from .resource_service import ResourceService
 from .scheduling_service import SchedulingService
 from .task_service import TaskService
@@ -10,4 +11,5 @@ __all__ = [
     "PersonService",
     "ResourceService",
     "TaskService",
+    "PlanningService",
 ]

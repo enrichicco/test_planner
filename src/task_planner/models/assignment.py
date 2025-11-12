@@ -8,8 +8,10 @@ from typing import Optional
 from sqlalchemy import DateTime, Float, ForeignKey, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from . import Person, Resource, Task
 from .base import Base, TimestampMixin
+from .person import Person
+from .resource import Resource
+from .task import Task
 
 
 class Assignment(Base, TimestampMixin):

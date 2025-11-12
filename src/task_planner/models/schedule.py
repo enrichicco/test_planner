@@ -4,13 +4,16 @@ Schedule model for representing generated schedules.
 
 import enum
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from sqlalchemy import JSON, DateTime, Enum, Float, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from . import ScheduleException, Task
 from .base import Base, TimestampMixin
+
+if TYPE_CHECKING:
+    from .exception import ScheduleException
+    from .task import Task
 
 
 class ScheduleStatus(enum.Enum):
