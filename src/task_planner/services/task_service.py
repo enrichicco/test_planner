@@ -1,5 +1,6 @@
 """
 Service for managing tasks.
+Merged implementation combining features from both versions.
 """
 
 from datetime import datetime
@@ -8,12 +9,14 @@ from typing import Any, Dict, List, Optional
 from sqlalchemy.orm import Session
 
 from ..models import Task, TaskPriority, TaskStatus
+from .exceptions import ValidationException
 
 
 class TaskService:
     """Service for task operations."""
 
     def __init__(self, db: Session) -> None:
+        """Initialize task service with database session."""
         self.db = db
 
     def create_task(
@@ -31,6 +34,16 @@ class TaskService:
         predecessor_id: Optional[int] = None,
     ) -> Task:
         """Create a new task."""
+        # Validate predecessor if provided
+        if predecessor_id is not None:
+            predecessor = self.get_task(predecessor_id)
+            if not predecessor:
+                raise ValidationException(f"Predecessor task {predecessor_id} not found")
+
+            # Check for circular dependencies
+            if self._would_create_cycle(predecessor_id, predecessor_id):
+                raise ValidationException("Adding this predecessor would create a cycle")
+
         task = Task(
             name=name,
             duration=duration,
@@ -59,12 +72,15 @@ class TaskService:
         status: Optional[TaskStatus] = None,
         limit: int = 100,
     ) -> List[Task]:
-        """List tasks."""
+        """List tasks, optionally filtered by team and status."""
         query = self.db.query(Task).order_by(Task.created_at.desc())
-        if team_id:
+
+        if team_id is not None:
             query = query.filter(Task.team_id == team_id)
-        if status:
+
+        if status is not None:
             query = query.filter(Task.status == status)
+
         return query.limit(limit).all()
 
     def update_task(
@@ -110,6 +126,65 @@ class TaskService:
         self.db.commit()
         self.db.refresh(task)
         return task
+
+    def update_task_status(self, task_id: int, status: TaskStatus) -> Optional[Task]:
+        """Update task status with validation."""
+        task = self.get_task(task_id)
+        if not task:
+            return None
+
+        task.status = status
+        self.db.commit()
+        self.db.refresh(task)
+        return task
+
+    def add_dependency(
+        self,
+        task_id: int,
+        predecessor_id: int,
+    ) -> Optional[Task]:
+        """Add a predecessor dependency to a task."""
+        task = self.get_task(task_id)
+        if not task:
+            raise ValidationException(f"Task {task_id} not found")
+
+        predecessor = self.get_task(predecessor_id)
+        if not predecessor:
+            raise ValidationException(f"Predecessor task {predecessor_id} not found")
+
+        # Check for circular dependencies
+        if self._would_create_cycle(predecessor_id, task_id):
+            raise ValidationException("Adding this dependency would create a cycle")
+
+        task.predecessor_id = predecessor_id
+        self.db.commit()
+        self.db.refresh(task)
+        return task
+
+    def _would_create_cycle(self, from_task_id: int, to_task_id: int) -> bool:
+        """Check if adding a dependency would create a cycle."""
+        if from_task_id == to_task_id:
+            return True
+
+        visited = set()
+
+        def has_path(current_id: int, target_id: int) -> bool:
+            if current_id == target_id:
+                return True
+            if current_id in visited:
+                return False
+
+            visited.add(current_id)
+
+            # Get the task and check its predecessor
+            task = self.get_task(current_id)
+            if task and task.predecessor_id:
+                if has_path(task.predecessor_id, target_id):
+                    return True
+
+            return False
+
+        return has_path(from_task_id, to_task_id)
 
     def delete_task(self, task_id: int) -> bool:
         """Delete a task."""

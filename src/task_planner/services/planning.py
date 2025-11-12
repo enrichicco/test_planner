@@ -5,8 +5,8 @@ from typing import Dict, List, Optional, Tuple
 
 from sqlalchemy.orm import Session
 
-from task_planner.models import Task, TaskStatus
-from task_planner.services.exceptions import (
+from ..models import Task, TaskStatus
+from .exceptions import (
     InfeasibleScheduleException,
     PlanningException,
 )

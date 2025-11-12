@@ -6,8 +6,8 @@ from typing import Generator
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
-from task_planner.config import settings
-from task_planner.models import Base
+from ..config import settings
+from ..models import Base
 
 # Create engine
 engine = create_engine(
