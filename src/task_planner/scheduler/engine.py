@@ -6,13 +6,7 @@ import time
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 
-try:
-    from pyjobshop import Model
-    from pyjobshop.solvers import solve
-except ImportError:
-    # Fallback for when pyjobshop is not installed yet
-    Model = Any
-    solve = None
+from pyjobshop import solve
 
 from ..models import Assignment, Person, Resource, Schedule, ScheduleStatus, Task
 from .problem_builder import ProblemBuilder
@@ -97,7 +91,7 @@ class SchedulerEngine:
         try:
             if solve is not None:
                 solution = solve(
-                    model,
+                    model.data(),
                     solver=self.solver,
                     time_limit=self.time_limit,
                     display=False,
