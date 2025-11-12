@@ -44,20 +44,18 @@ class ProblemBuilder:
         # Create machines (people)
         for idx, person in enumerate(people):
             if person.is_available:
-                # machine = self.model.add_machine(
-                #     name=f"person_{person.id}",
-                #     optional=False,
-                # )
+                self.model.add_machine(
+                    name=f"person_{person.id}",
+                )
                 self.person_mapping[person.id] = idx
 
         # Create resources
         for idx, resource in enumerate(resources):
             if resource.is_available:
-                # pj_resource = self.model.add_resource(
-                #     name=f"resource_{resource.id}",
-                #     capacity=int(resource.capacity),
-                #     renewable=resource.is_renewable,
-                # )
+                if resource.is_renewable:
+                    self.model.add_renewable(capacity=int(resource.capacity))
+                else:
+                    self.model.add_non_renewable(capacity=int(resource.capacity))
                 self.resource_mapping[resource.id] = idx
 
         # Create jobs and tasks
