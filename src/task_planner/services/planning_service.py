@@ -5,7 +5,7 @@ from typing import Dict, List, Optional, Tuple, Union
 
 from sqlalchemy.orm import Session
 
-from ..models import Assignment, Task, TaskStatus
+from ..models import Task, TaskStatus
 from .exceptions import (
     InfeasibleScheduleException,
     PlanningException,
@@ -181,9 +181,7 @@ class PlanningService:
     def _get_dependent_tasks(self, task: Task) -> List[Task]:
         """Get all tasks that depend on the given task (have it as predecessor)."""
         # Query tasks where predecessor_id equals this task's id
-        dependent = (
-            self.db.query(Task).filter(Task.predecessor_id == task.id).all()
-        )
+        dependent = self.db.query(Task).filter(Task.predecessor_id == task.id).all()
 
         # Recursively get dependent tasks
         all_dependent = list(dependent)

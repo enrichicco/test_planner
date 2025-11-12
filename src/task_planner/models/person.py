@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from .team import Team
 
 
-class Person(Base, TimestampMixin):  # type: ignore[misc]
+class Person(Base, TimestampMixin):
     """Represents a person who can be assigned to tasks."""
 
     __tablename__ = "people"
