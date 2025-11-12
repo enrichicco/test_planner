@@ -1,5 +1,5 @@
 from .person_service import PersonService
-from .planning import PlanningService
+from .planning_service import PlanningService
 from .resource_service import ResourceService
 from .scheduling_service import SchedulingService
 from .task_service import TaskService
