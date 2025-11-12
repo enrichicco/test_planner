@@ -9,7 +9,7 @@ description = "A comprehensive task planning service using PyJobShop and Postgre
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "pyjobshop>=1.0.0",
+    "pyjobshop>=0.0.7",
     "sqlalchemy>=2.0.44",
     "psycopg2-binary>=2.9.9",
     "alembic>=1.13.0",
@@ -32,6 +32,8 @@ target-version = "py312"
 [tool.mypy]
 strict = true
 ignore_missing_imports = true
+explicit_package_bases = true
+exclude = ".*/__init__\\.py$"
 
 [dependency-groups]
 dev = [
