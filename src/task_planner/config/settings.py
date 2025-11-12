@@ -26,9 +26,12 @@ class Settings(BaseSettings):
     # Scheduler settings
     solver_time_limit: int = 60  # seconds
     default_solver: str = "ortools"  # or "cpoptimizer"
+    max_planning_horizon_days: int = 90
+    default_working_hours_per_day: int = 8
 
     # Logging
     log_level: str = "INFO"
+    debug: bool = False
 
     # Report settings
     report_template_dir: str = "templates/reports"
