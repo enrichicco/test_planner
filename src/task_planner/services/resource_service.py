@@ -1,7 +1,9 @@
 """
 Service for managing resources.
 """
-from typing import List, Optional, Dict, Any
+
+from typing import Any, Dict, List, Optional
+
 from sqlalchemy.orm import Session
 
 from ..models import Resource
@@ -50,7 +52,7 @@ class ResourceService:
         if resource_type:
             query = query.filter(Resource.resource_type == resource_type)
         if available_only:
-            query = query.filter(Resource.is_available == True)
+            query = query.filter(Resource.is_available)
         return query.all()
 
     def update_resource(

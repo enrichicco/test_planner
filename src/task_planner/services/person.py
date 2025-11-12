@@ -49,7 +49,10 @@ class PersonService:
         query = self.db.query(Person)
         if active_only:
             query = query.filter(Person.is_active)
-        return query.all()
+
+        people: List[Person] = query.all()
+
+        return people
 
     def add_skill(self, person_id: int, resource_id: int) -> None:
         """Add a skill (resource) to a person."""

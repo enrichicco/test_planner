@@ -1,23 +1,26 @@
 """
 Tests for service layer.
 """
-import pytest
-from datetime import datetime, timedelta
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 
-from src.task_planner.models import Base, TaskStatus, TaskPriority
+from datetime import datetime, timedelta
+from typing import Any, Generator
+
+import pytest
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session, sessionmaker
+
+from src.task_planner.models import Base, TaskPriority, TaskStatus
 from src.task_planner.services import (
-    TeamService,
     PersonService,
     ResourceService,
-    TaskService,
     SchedulingService,
+    TaskService,
+    TeamService,
 )
 
 
-@pytest.fixture
-def db_session():
+@pytest.fixture  # type: ignore[misc]
+def db_session() -> Generator[Session, Any, None]:
     """Create a test database session."""
     engine = create_engine("sqlite:///:memory:")
     Base.metadata.create_all(engine)
@@ -27,7 +30,7 @@ def db_session():
     session.close()
 
 
-def test_team_service_create(db_session):
+def test_team_service_create(db_session: Session) -> None:
     """Test creating a team."""
     service = TeamService(db_session)
     team = service.create_team(name="Test Team", description="A test team")
@@ -36,7 +39,7 @@ def test_team_service_create(db_session):
     assert team.is_active is True
 
 
-def test_person_service_create(db_session):
+def test_person_service_create(db_session: Session) -> None:
     """Test creating a person."""
     # First create a team
     team_service = TeamService(db_session)
@@ -56,7 +59,7 @@ def test_person_service_create(db_session):
     assert person.team_id == team.id
 
 
-def test_resource_service_create(db_session):
+def test_resource_service_create(db_session: Session) -> None:
     """Test creating a resource."""
     service = ResourceService(db_session)
     resource = service.create_resource(
@@ -69,7 +72,7 @@ def test_resource_service_create(db_session):
     assert resource.capacity == 10.0
 
 
-def test_task_service_create(db_session):
+def test_task_service_create(db_session: Session) -> None:
     """Test creating a task."""
     # Create team
     team_service = TeamService(db_session)
@@ -90,25 +93,11 @@ def test_task_service_create(db_session):
     assert task.status == TaskStatus.PENDING
 
 
-def test_scheduling_service_create_schedule(db_session):
+def test_scheduling_service_create_schedule(db_session: Session) -> None:
     """Test creating a schedule."""
     # Setup: Create team, person, and task
     team_service = TeamService(db_session)
     team = team_service.create_team(name="Test Team")
-
-    person_service = PersonService(db_session)
-    person = person_service.create_person(
-        name="John Doe",
-        email="john@example.com",
-        team_id=team.id,
-    )
-
-    task_service = TaskService(db_session)
-    task = task_service.create_task(
-        name="Test Task",
-        duration=8.0,
-        team_id=team.id,
-    )
 
     # Create schedule
     scheduling_service = SchedulingService(db_session)

@@ -1,9 +1,10 @@
 """
 Main scheduling engine using PyJobShop.
 """
-from typing import List, Dict, Any, Optional, Tuple
-from datetime import datetime
+
 import time
+from datetime import datetime
+from typing import Any, Dict, List, Optional, Tuple
 
 try:
     from pyjobshop import Model
@@ -13,8 +14,7 @@ except ImportError:
     Model = Any
     solve = None
 
-from ..models import Task, Person, Resource, Assignment, Schedule, ScheduleStatus
-from ..config import settings
+from ..models import Assignment, Person, Resource, Schedule, ScheduleStatus, Task
 from .problem_builder import ProblemBuilder
 from .solution_parser import SolutionParser
 
@@ -132,15 +132,15 @@ class SchedulerEngine:
 
         # Check for deadline violations
         for assignment in assignments:
-            task = next((t for t in tasks if t.id == assignment.task_id), None)
-            if task and task.deadline and assignment.scheduled_end:
-                if assignment.scheduled_end > task.deadline:
+            task_obj: Optional[Task] = next((t for t in tasks if t.id == assignment.task_id), None)
+            if task_obj and task_obj.deadline and assignment.scheduled_end:
+                if assignment.scheduled_end > task_obj.deadline:
                     exceptions.append(
                         {
                             "type": "DEADLINE_MISS",
                             "severity": "error",
-                            "message": f"Task '{task.name}' scheduled to end after deadline",
-                            "task_id": task.id,
+                            "message": f"Task '{task_obj.name}' scheduled to end after deadline",
+                            "task_id": task_obj.id,
                         }
                     )
 

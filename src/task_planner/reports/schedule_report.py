@@ -1,11 +1,12 @@
 """
 Schedule report data structures and calculations.
 """
-from typing import List, Dict, Any, Optional
-from datetime import datetime, timedelta
-from collections import defaultdict
 
-from ..models import Schedule, Assignment, Task, Person, ScheduleException
+from collections import defaultdict
+from datetime import datetime, timezone
+from typing import Any, Dict, List, Optional
+
+from ..models import Assignment, Person, Schedule, ScheduleException, Task
 
 
 class ScheduleReport:
@@ -49,9 +50,7 @@ class ScheduleReport:
         # Calculate makespan
         makespan = None
         if self.assignments and self.assignments[0].scheduled_end:
-            earliest_start = min(
-                a.scheduled_start for a in self.assignments if a.scheduled_start
-            )
+            earliest_start = min(a.scheduled_start for a in self.assignments if a.scheduled_start)
             latest_end = max(a.scheduled_end for a in self.assignments if a.scheduled_end)
             makespan = (latest_end - earliest_start).total_seconds() / 3600  # hours
 
@@ -124,7 +123,7 @@ class ScheduleReport:
 
     def generate_task_timeline(self) -> List[Dict[str, Any]]:
         """Generate task timeline."""
-        timeline = []
+        timeline: List[Dict[str, int | float | str | Optional[datetime]]] = []
 
         for assignment in self.assignments:
             task = self.tasks.get(assignment.task_id)
@@ -149,9 +148,7 @@ class ScheduleReport:
             )
 
         # Sort by scheduled start time
-        timeline.sort(
-            key=lambda x: x["scheduled_start"] if x["scheduled_start"] else "9999-12-31"
-        )
+        timeline.sort(key=lambda x: x["scheduled_start"] if x["scheduled_start"] else "9999-12-31")
         return timeline
 
     def generate_exceptions_report(self) -> List[Dict[str, Any]]:
@@ -179,5 +176,5 @@ class ScheduleReport:
             "person_utilization": self.generate_person_utilization(),
             "task_timeline": self.generate_task_timeline(),
             "exceptions": self.generate_exceptions_report(),
-            "generated_at": datetime.utcnow().isoformat(),
+            "generated_at": datetime.now(timezone.utc).isoformat(),
         }

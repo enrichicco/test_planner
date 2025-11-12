@@ -2,24 +2,23 @@
 Supporting table models for a2rp schema.
 Includes processing orders, planning tables, and historical data.
 """
-from sqlalchemy import Integer, String, Text, Numeric, DateTime, Boolean, ForeignKey, Date
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from typing import Optional, List, TYPE_CHECKING
-from datetime import datetime, date
+
+from datetime import date, datetime
 from decimal import Decimal
+from typing import TYPE_CHECKING, List, Optional
+
+from sqlalchemy import Boolean, Date, DateTime, ForeignKey, Integer, Numeric, String, Text
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import A2RPBase
 
 if TYPE_CHECKING:
-    from .core import Project, Task, Resource
-    from .organizational import (
-        Imputation,
-        OrganizationalUnit,
-        WorkBreakdownStructure,
-        TechnicalFeature,
-        CostItem,
-    )
+    from .core import Task
     from .lookups import ProcessingOrderStatus, ProcessingOrderType
+    from .organizational import (
+        TechnicalFeature,
+        WorkBreakdownStructure,
+    )
 
 
 class ProcessingOrder(A2RPBase):
@@ -50,10 +49,14 @@ class ProcessingOrder(A2RPBase):
         Integer, ForeignKey("a2rp.processing_order_type.processing_order_type_id"), nullable=True
     )
     processing_order_status_id: Mapped[Optional[int]] = mapped_column(
-        Integer, ForeignKey("a2rp.processing_order_status.processing_order_status_id"), nullable=True
+        Integer,
+        ForeignKey("a2rp.processing_order_status.processing_order_status_id"),
+        nullable=True,
     )
     work_breakdown_structure_id: Mapped[Optional[int]] = mapped_column(
-        Integer, ForeignKey("a2rp.work_breakdown_structure.work_breakdown_structure_id"), nullable=True
+        Integer,
+        ForeignKey("a2rp.work_breakdown_structure.work_breakdown_structure_id"),
+        nullable=True,
     )
     technical_feature_id: Mapped[Optional[int]] = mapped_column(
         Integer, ForeignKey("a2rp.technical_feature.technical_feature_id"), nullable=True

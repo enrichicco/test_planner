@@ -1,7 +1,9 @@
 """
 Service for managing teams.
 """
+
 from typing import List, Optional
+
 from sqlalchemy.orm import Session
 
 from ..models import Team
@@ -29,7 +31,7 @@ class TeamService:
         """List all teams."""
         query = self.db.query(Team)
         if active_only:
-            query = query.filter(Team.is_active == True)
+            query = query.filter(Team.is_active)
         return query.all()
 
     def update_team(

@@ -1,7 +1,9 @@
 """
 Service for managing people.
 """
-from typing import List, Optional, Dict, Any
+
+from typing import Any, Dict, List, Optional
+
 from sqlalchemy.orm import Session
 
 from ..models import Person
@@ -50,7 +52,7 @@ class PersonService:
         if team_id:
             query = query.filter(Person.team_id == team_id)
         if available_only:
-            query = query.filter(Person.is_available == True)
+            query = query.filter(Person.is_available)
         return query.all()
 
     def update_person(

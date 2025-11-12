@@ -1,6 +1,7 @@
 """
 Logging configuration for the application.
 """
+
 import logging
 import sys
 from typing import Optional

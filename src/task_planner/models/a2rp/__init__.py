@@ -4,21 +4,30 @@ Exports all models for the customer's a2rp database schema.
 """
 
 # Base classes
-from .base import A2RPBase, TimestampMixin, RevisionMixin
+from .base import A2RPBase, RevisionMixin, TimestampMixin
+
+# Core entities
+from .core import (
+    Assignment,
+    AssignmentByMonth,
+    Project,
+    Resource,
+    Task,
+)
 
 # Lookup/Reference tables
 from .lookups import (
-    ProjectStatus,
-    ProjectType,
-    TaskStatus,
-    ResourceStatus,
-    ResourceType,
-    ProcessingOrderStatus,
-    ProcessingOrderType,
     CostType,
     Job,
     NtAccount,
+    ProcessingOrderStatus,
+    ProcessingOrderType,
+    ProjectStatus,
+    ProjectType,
     Property,
+    ResourceStatus,
+    ResourceType,
+    TaskStatus,
 )
 
 # Organizational and structure tables
@@ -28,25 +37,16 @@ from .organizational import (
     Customer,
     Imputation,
     OrganizationalUnit,
+    ResourceBreakdownStructure,
     TechnicalFeature,
     WorkBreakdownStructure,
-    ResourceBreakdownStructure,
-)
-
-# Core entities
-from .core import (
-    Project,
-    Task,
-    Resource,
-    Assignment,
-    AssignmentByMonth,
 )
 
 # Supporting tables
 from .supporting import (
-    ProcessingOrder,
     HistoricalProjectSummary,
     HistoricalProjectSummaryResource,
+    ProcessingOrder,
     ProjectToPlan,
     ProjectToPlanOrganizationalUnit,
     TaskToPlan,

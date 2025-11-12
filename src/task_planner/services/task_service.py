@@ -1,11 +1,13 @@
 """
 Service for managing tasks.
 """
-from typing import List, Optional, Dict, Any
+
 from datetime import datetime
+from typing import Any, Dict, List, Optional
+
 from sqlalchemy.orm import Session
 
-from ..models import Task, TaskStatus, TaskPriority
+from ..models import Task, TaskPriority, TaskStatus
 
 
 class TaskService:

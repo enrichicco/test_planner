@@ -1,10 +1,13 @@
 """
 Resource model for representing equipment, tools, and other resources.
 """
-from sqlalchemy import Integer, String, Text, Boolean, Float, JSON
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from typing import List, Optional, Dict, Any
 
+from typing import Any, Dict, List, Optional
+
+from sqlalchemy import JSON, Boolean, Float, Integer, String, Text
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from . import Assignment
 from .base import Base, TimestampMixin
 
 
@@ -23,9 +26,7 @@ class Resource(Base, TimestampMixin):
     properties: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON, nullable=True)
 
     # Relationships
-    assignments: Mapped[List["Assignment"]] = relationship(
-        "Assignment", back_populates="resource"
-    )
+    assignments: Mapped[List["Assignment"]] = relationship("Assignment", back_populates="resource")
 
     def __repr__(self) -> str:
         return f"<Resource(id={self.id}, name='{self.name}', type='{self.resource_type}')>"

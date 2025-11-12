@@ -1,27 +1,29 @@
 """
 Task API endpoints.
 """
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+
 from typing import List, Optional
 
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+
+from ...models import TaskPriority as TaskPriorityModel
+from ...models import TaskStatus as TaskStatusModel
 from ...models.database import get_db
-from ...models import TaskStatus as TaskStatusModel, TaskPriority as TaskPriorityModel
 from ...services import TaskService
-from ..schemas import TaskCreate, TaskUpdate, TaskResponse
+from ..schemas import TaskCreate, TaskResponse, TaskUpdate
 
 router = APIRouter()
 
 
-@router.post("/", response_model=TaskResponse, status_code=201)
+@router.post("/", response_model=TaskResponse, status_code=201)  # type: ignore[misc]
 def create_task(task: TaskCreate, db: Session = Depends(get_db)) -> TaskResponse:
     """Create a new task."""
     service = TaskService(db)
 
     # Convert enum to model enum
     priority = TaskPriorityModel(task.priority.value)
-
-    return service.create_task(
+    db_task = service.create_task(
         name=task.name,
         duration=task.duration,
         description=task.description,
@@ -35,18 +37,21 @@ def create_task(task: TaskCreate, db: Session = Depends(get_db)) -> TaskResponse
         predecessor_id=task.predecessor_id,
     )
 
+    return TaskResponse.model_validate(db_task)
 
-@router.get("/{task_id}", response_model=TaskResponse)
+
+@router.get("/{task_id}", response_model=TaskResponse)  # type: ignore[misc]
 def get_task(task_id: int, db: Session = Depends(get_db)) -> TaskResponse:
     """Get a task by ID."""
     service = TaskService(db)
     task = service.get_task(task_id)
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
-    return task
+
+    return TaskResponse.model_validate(task)
 
 
-@router.get("/", response_model=List[TaskResponse])
+@router.get("/", response_model=List[TaskResponse])  # type: ignore[misc]
 def list_tasks(
     team_id: Optional[int] = None,
     status: Optional[str] = None,
@@ -56,13 +61,13 @@ def list_tasks(
     """List all tasks."""
     service = TaskService(db)
     status_filter = TaskStatusModel[status.upper()] if status else None
-    return service.list_tasks(team_id=team_id, status=status_filter, limit=limit)
+    tasks = service.list_tasks(team_id=team_id, status=status_filter, limit=limit)
+
+    return [TaskResponse.model_validate(t) for t in tasks]
 
 
-@router.patch("/{task_id}", response_model=TaskResponse)
-def update_task(
-    task_id: int, task: TaskUpdate, db: Session = Depends(get_db)
-) -> TaskResponse:
+@router.patch("/{task_id}", response_model=TaskResponse)  # type: ignore[misc]
+def update_task(task_id: int, task: TaskUpdate, db: Session = Depends(get_db)) -> TaskResponse:
     """Update a task."""
     service = TaskService(db)
 
@@ -85,10 +90,11 @@ def update_task(
     )
     if not updated:
         raise HTTPException(status_code=404, detail="Task not found")
-    return updated
+
+    return TaskResponse.model_validate(updated)
 
 
-@router.delete("/{task_id}", status_code=204)
+@router.delete("/{task_id}", status_code=204)  # type: ignore[misc]
 def delete_task(task_id: int, db: Session = Depends(get_db)) -> None:
     """Delete a task."""
     service = TaskService(db)

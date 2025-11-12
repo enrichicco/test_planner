@@ -69,7 +69,9 @@ class TaskService:
         if team_id is not None:
             query = query.filter(Task.team_id == team_id)
 
-        return query.all()
+        tasks: List[Task] = query.all()
+
+        return tasks
 
     def add_resource_requirement(
         self,
@@ -174,7 +176,7 @@ class TaskService:
             raise ValidationException(f"Exception {exception_id} not found")
 
         exception.resolved = True
-        exception.resolved_at = datetime.utcnow()
+        exception.resolved_at = datetime.now(timezone.utc)
         exception.resolution_notes = resolution_notes
         self.db.commit()
 

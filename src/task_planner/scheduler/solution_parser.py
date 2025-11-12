@@ -1,10 +1,12 @@
 """
 Solution parser for converting PyJobShop solutions back to database models.
 """
-from typing import List, Dict, Any, Optional, Tuple
+
 from datetime import datetime, timedelta
+from typing import Any, Dict, List, Tuple
 
 from ..models import Assignment, Task
+from . import ProblemBuilder
 
 
 class SolutionParser:
@@ -62,11 +64,14 @@ class SolutionParser:
         # Parse task assignments
         task_dict = {task.id: task for task in tasks}
 
+        if self.problem_builder.model is None:
+            return assignments, metadata
+
         # Iterate through solution to extract assignments
         # The exact API depends on PyJobShop version
         try:
             # Attempt to get task assignments from solution
-            for pj_task_idx in range(len(self.problem_builder.model.tasks())):
+            for pj_task_idx in range(len(self.problem_builder.model.tasks)):
                 task_id = self.problem_builder.get_task_id(pj_task_idx)
                 if task_id and task_id in task_dict:
                     task = task_dict[task_id]

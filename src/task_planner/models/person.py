@@ -1,10 +1,13 @@
 """
 Person model for representing team members.
 """
-from sqlalchemy import Integer, String, Text, Boolean, ForeignKey, JSON
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from typing import List, Optional, Dict, Any
 
+from typing import Any, Dict, List, Optional
+
+from sqlalchemy import JSON, Boolean, ForeignKey, Integer, String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from . import Assignment, Team
 from .base import Base, TimestampMixin
 
 
@@ -22,15 +25,11 @@ class Person(Base, TimestampMixin):
     max_concurrent_tasks: Mapped[int] = mapped_column(Integer, default=5)
 
     # Foreign Keys
-    team_id: Mapped[Optional[int]] = mapped_column(
-        Integer, ForeignKey("teams.id"), nullable=True
-    )
+    team_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("teams.id"), nullable=True)
 
     # Relationships
     team: Mapped[Optional["Team"]] = relationship("Team", back_populates="members")
-    assignments: Mapped[List["Assignment"]] = relationship(
-        "Assignment", back_populates="person"
-    )
+    assignments: Mapped[List["Assignment"]] = relationship("Assignment", back_populates="person")
 
     def __repr__(self) -> str:
         return f"<Person(id={self.id}, name='{self.name}', email='{self.email}')>"

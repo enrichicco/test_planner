@@ -1,11 +1,12 @@
 """
 Report generator for creating various output formats.
 """
+
 import json
-from typing import Dict, Any, Optional
 from pathlib import Path
-from datetime import datetime
-from jinja2 import Environment, FileSystemLoader, Template
+from typing import Any, Dict, List, Optional
+
+from jinja2 import Environment, FileSystemLoader
 
 from ..config import settings
 
@@ -91,7 +92,7 @@ class ReportGenerator:
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Schedule Report - {summary.get('schedule_name', 'Unknown')}</title>
+    <title>Schedule Report - {summary.get("schedule_name", "Unknown")}</title>
     <style>
         body {{
             font-family: Arial, sans-serif;
@@ -173,34 +174,34 @@ class ReportGenerator:
 </head>
 <body>
     <div class="container">
-        <h1>Schedule Report: {summary.get('schedule_name', 'Unknown')}</h1>
-        <p>Generated: {report_data.get('generated_at', '')}</p>
+        <h1>Schedule Report: {summary.get("schedule_name", "Unknown")}</h1>
+        <p>Generated: {report_data.get("generated_at", "")}</p>
 
         <h2>Summary</h2>
         <div class="summary">
             <div class="summary-item">
                 <label>Total Tasks</label>
-                <value>{summary.get('total_tasks', 0)}</value>
+                <value>{summary.get("total_tasks", 0)}</value>
             </div>
             <div class="summary-item">
                 <label>Scheduled Tasks</label>
-                <value>{summary.get('scheduled_tasks', 0)}</value>
+                <value>{summary.get("scheduled_tasks", 0)}</value>
             </div>
             <div class="summary-item">
                 <label>Total Duration (hours)</label>
-                <value>{summary.get('total_duration_hours', 0)}</value>
+                <value>{summary.get("total_duration_hours", 0)}</value>
             </div>
             <div class="summary-item">
                 <label>Makespan (hours)</label>
-                <value>{summary.get('makespan_hours', 'N/A')}</value>
+                <value>{summary.get("makespan_hours", "N/A")}</value>
             </div>
             <div class="summary-item">
                 <label>Total Exceptions</label>
-                <value>{summary.get('total_exceptions', 0)}</value>
+                <value>{summary.get("total_exceptions", 0)}</value>
             </div>
             <div class="summary-item">
                 <label>Solve Time (s)</label>
-                <value>{summary.get('solve_time_seconds', 'N/A')}</value>
+                <value>{summary.get("solve_time_seconds", "N/A")}</value>
             </div>
         </div>
 
@@ -214,13 +215,18 @@ class ReportGenerator:
                 </tr>
             </thead>
             <tbody>
-                {"".join(f'''
+                {
+            "".join(
+                f'''
                 <tr>
-                    <td>{p.get('person_name', 'Unknown')}</td>
-                    <td>{p.get('total_tasks', 0)}</td>
-                    <td>{p.get('total_hours', 0)}</td>
+                    <td>{p.get("person_name", "Unknown")}</td>
+                    <td>{p.get("total_tasks", 0)}</td>
+                    <td>{p.get("total_hours", 0)}</td>
                 </tr>
-                ''' for p in person_util)}
+                '''
+                for p in person_util
+            )
+        }
             </tbody>
         </table>
 
@@ -237,16 +243,21 @@ class ReportGenerator:
                 </tr>
             </thead>
             <tbody>
-                {"".join(f'''
+                {
+            "".join(
+                f'''
                 <tr>
-                    <td>{t.get('task_name', 'Unknown')}</td>
-                    <td>{t.get('person_name', 'N/A')}</td>
-                    <td>{t.get('scheduled_start', 'N/A')}</td>
-                    <td>{t.get('scheduled_end', 'N/A')}</td>
-                    <td>{t.get('duration_hours', 0)}</td>
-                    <td>{t.get('status', 'unknown')}</td>
+                    <td>{t.get("task_name", "Unknown")}</td>
+                    <td>{t.get("person_name", "N/A")}</td>
+                    <td>{t.get("scheduled_start", "N/A")}</td>
+                    <td>{t.get("scheduled_end", "N/A")}</td>
+                    <td>{t.get("duration_hours", 0)}</td>
+                    <td>{t.get("status", "unknown")}</td>
                 </tr>
-                ''' for t in timeline)}
+                '''
+                for t in timeline
+            )
+        }
             </tbody>
         </table>
 
@@ -262,15 +273,20 @@ class ReportGenerator:
                 </tr>
             </thead>
             <tbody>
-                {"".join(f'''
+                {
+            "".join(
+                f'''
                 <tr>
-                    <td>{e.get('type', 'unknown')}</td>
-                    <td><span class="badge badge-{e.get('severity', 'info')}">{e.get('severity', 'info')}</span></td>
-                    <td>{e.get('message', '')}</td>
-                    <td>{e.get('task_name', 'N/A')}</td>
-                    <td>{'Yes' if e.get('resolved') else 'No'}</td>
+                    <td>{e.get("type", "unknown")}</td>
+                    <td><span class="badge badge-{e.get("severity", "info")}">{e.get("severity", "info")}</span></td>
+                    <td>{e.get("message", "")}</td>
+                    <td>{e.get("task_name", "N/A")}</td>
+                    <td>{"Yes" if e.get("resolved") else "No"}</td>
                 </tr>
-                ''' for e in exceptions)}
+                '''
+                for e in exceptions
+            )
+        }
             </tbody>
         </table>
     </div>
@@ -279,7 +295,7 @@ class ReportGenerator:
         """
         return html
 
-    def generate_csv_report(self, data: list, filename: str) -> str:
+    def generate_csv_report(self, data: List[Any], filename: str) -> str:
         """
         Generate CSV report.
 

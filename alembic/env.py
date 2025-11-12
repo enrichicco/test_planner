@@ -1,69 +1,25 @@
 """
 Alembic environment configuration.
 """
-from logging.config import fileConfig
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
-from alembic import context
+
 import sys
+from logging.config import fileConfig
 from pathlib import Path
+
+from sqlalchemy import MetaData, engine_from_config, pool
+
+from alembic import context
 
 # Add src directory to path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from src.task_planner.models.base import Base
-from src.task_planner.models.a2rp.base import A2RPBase
 from src.task_planner.config import settings
+from src.task_planner.models.a2rp.base import A2RPBase
+from src.task_planner.models.base import Base
 
 # Import all old application models (if still needed)
-from src.task_planner.models import (
-    Team,
-    Person,
-    Resource,
-    Task,
-    Assignment,
-    Schedule,
-    ScheduleException,
-)
 
 # Import all a2rp schema models
-from src.task_planner.models.a2rp import (
-    # Lookups
-    ProjectStatus,
-    ProjectType,
-    TaskStatus,
-    ResourceStatus,
-    ResourceType,
-    ProcessingOrderStatus,
-    ProcessingOrderType,
-    CostType,
-    Job,
-    NtAccount,
-    Property,
-    # Organizational
-    CostCenter,
-    CostItem,
-    Customer,
-    Imputation,
-    OrganizationalUnit,
-    TechnicalFeature,
-    WorkBreakdownStructure,
-    ResourceBreakdownStructure,
-    # Core
-    Project,
-    Task as A2RPTask,
-    Resource as A2RPResource,
-    Assignment as A2RPAssignment,
-    AssignmentByMonth,
-    # Supporting
-    ProcessingOrder,
-    HistoricalProjectSummary,
-    HistoricalProjectSummaryResource,
-    ProjectToPlan,
-    ProjectToPlanOrganizationalUnit,
-    TaskToPlan,
-    TaskToPlanOrganizationalUnit,
-)
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -80,7 +36,6 @@ if config.config_file_name is not None:
 # add your model's MetaData object here
 # for 'autogenerate' support
 # Combine metadata from both Base classes to track all tables
-from sqlalchemy import MetaData
 
 combined_metadata = MetaData()
 

@@ -1,11 +1,14 @@
 """
 Main FastAPI application.
 """
+
+from typing import Dict
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from ..config import settings
-from .routers import teams, people, resources, tasks, schedules, reports
+from .routers import people, reports, resources, schedules, tasks, teams
 
 app = FastAPI(
     title=settings.api_title,
@@ -31,8 +34,8 @@ app.include_router(schedules.router, prefix="/api/v1/schedules", tags=["Schedule
 app.include_router(reports.router, prefix="/api/v1/reports", tags=["Reports"])
 
 
-@app.get("/")
-async def root() -> dict:
+@app.get("/")  # type: ignore[misc]
+async def root() -> Dict[str, str]:
     """Root endpoint."""
     return {
         "name": settings.api_title,
@@ -41,7 +44,7 @@ async def root() -> dict:
     }
 
 
-@app.get("/health")
-async def health() -> dict:
+@app.get("/health")  # type: ignore[misc]
+async def health() -> Dict[str, str]:
     """Health check endpoint."""
     return {"status": "healthy"}

@@ -1,12 +1,15 @@
 """
 Exception model for tracking scheduling conflicts and issues.
 """
-from sqlalchemy import Integer, String, Text, DateTime, ForeignKey, Enum
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from typing import Optional
-from datetime import datetime
-import enum
 
+import enum
+from datetime import datetime
+from typing import Optional
+
+from sqlalchemy import DateTime, Enum, ForeignKey, Integer, String, Text
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from . import Schedule, Task
 from .base import Base, TimestampMixin
 
 
@@ -37,12 +40,8 @@ class ScheduleException(Base, TimestampMixin):
     resolution_notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     # Foreign Keys
-    schedule_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("schedules.id"), nullable=False
-    )
-    task_id: Mapped[Optional[int]] = mapped_column(
-        Integer, ForeignKey("tasks.id"), nullable=True
-    )
+    schedule_id: Mapped[int] = mapped_column(Integer, ForeignKey("schedules.id"), nullable=False)
+    task_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("tasks.id"), nullable=True)
 
     # Relationships
     schedule: Mapped["Schedule"] = relationship("Schedule", back_populates="exceptions")

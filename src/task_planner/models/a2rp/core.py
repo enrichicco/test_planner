@@ -2,22 +2,43 @@
 Core entity models for a2rp schema.
 Includes Project, Task, Resource, and Assignment models.
 """
+
+from datetime import date, datetime
+from decimal import Decimal
+from typing import List, Optional
+
 from sqlalchemy import (
+    Boolean,
+    Date,
+    DateTime,
+    ForeignKey,
     Integer,
+    Numeric,
     String,
     Text,
-    Numeric,
-    DateTime,
-    Boolean,
-    ForeignKey,
-    Date,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from typing import Optional, List
-from datetime import datetime, date
-from decimal import Decimal
 
-from .base import A2RPBase, TimestampMixin, RevisionMixin
+from . import (
+    A2RPBase,
+    CostCenter,
+    Customer,
+    Imputation,
+    Job,
+    NtAccount,
+    OrganizationalUnit,
+    ProcessingOrder,
+    ProjectStatus,
+    ProjectType,
+    Property,
+    ResourceBreakdownStructure,
+    ResourceStatus,
+    ResourceType,
+    RevisionMixin,
+    TaskStatus,
+    WorkBreakdownStructure,
+)
+from .base import TimestampMixin
 
 
 class Project(A2RPBase, TimestampMixin, RevisionMixin):
@@ -62,7 +83,9 @@ class Project(A2RPBase, TimestampMixin, RevisionMixin):
         Integer, ForeignKey("a2rp.imputation.imputation_id"), nullable=True
     )
     work_breakdown_structure_id: Mapped[Optional[int]] = mapped_column(
-        Integer, ForeignKey("a2rp.work_breakdown_structure.work_breakdown_structure_id"), nullable=True
+        Integer,
+        ForeignKey("a2rp.work_breakdown_structure.work_breakdown_structure_id"),
+        nullable=True,
     )
     project_manager_organizational_unit_id: Mapped[Optional[int]] = mapped_column(
         Integer, ForeignKey("a2rp.organizational_unit.organizational_unit_id"), nullable=True
@@ -116,15 +139,25 @@ class Project(A2RPBase, TimestampMixin, RevisionMixin):
     end_variance: Mapped[Optional[Decimal]] = mapped_column(Numeric, nullable=True)
 
     # EVM metrics
-    acwp: Mapped[Optional[Decimal]] = mapped_column(Numeric, nullable=True)  # Actual Cost of Work Performed
-    bcws: Mapped[Optional[Decimal]] = mapped_column(Numeric, nullable=True)  # Budgeted Cost of Work Scheduled
-    spi: Mapped[Optional[Decimal]] = mapped_column(Numeric, nullable=True)  # Schedule Performance Index
-    tcpi: Mapped[Optional[Decimal]] = mapped_column(Numeric, nullable=True)  # To Complete Performance Index
+    acwp: Mapped[Optional[Decimal]] = mapped_column(
+        Numeric, nullable=True
+    )  # Actual Cost of Work Performed
+    bcws: Mapped[Optional[Decimal]] = mapped_column(
+        Numeric, nullable=True
+    )  # Budgeted Cost of Work Scheduled
+    spi: Mapped[Optional[Decimal]] = mapped_column(
+        Numeric, nullable=True
+    )  # Schedule Performance Index
+    tcpi: Mapped[Optional[Decimal]] = mapped_column(
+        Numeric, nullable=True
+    )  # To Complete Performance Index
     vac: Mapped[Optional[Decimal]] = mapped_column(Numeric, nullable=True)  # Variance At Completion
     eac: Mapped[Optional[Decimal]] = mapped_column(Numeric, nullable=True)  # Estimate At Completion
     cpi: Mapped[Optional[Decimal]] = mapped_column(Numeric, nullable=True)  # Cost Performance Index
     sv: Mapped[Optional[Decimal]] = mapped_column(Numeric, nullable=True)  # Schedule Variance
-    svp: Mapped[Optional[Decimal]] = mapped_column(Numeric, nullable=True)  # Schedule Variance Percentage
+    svp: Mapped[Optional[Decimal]] = mapped_column(
+        Numeric, nullable=True
+    )  # Schedule Variance Percentage
 
     # Completion percentages
     percent_completed: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
@@ -166,9 +199,13 @@ class Project(A2RPBase, TimestampMixin, RevisionMixin):
 
     # Relationships
     project_type: Mapped["ProjectType"] = relationship("ProjectType", back_populates="projects")
-    project_status: Mapped["ProjectStatus"] = relationship("ProjectStatus", back_populates="projects")
+    project_status: Mapped["ProjectStatus"] = relationship(
+        "ProjectStatus", back_populates="projects"
+    )
     customer: Mapped[Optional["Customer"]] = relationship("Customer", back_populates="projects")
-    imputation: Mapped[Optional["Imputation"]] = relationship("Imputation", back_populates="projects")
+    imputation: Mapped[Optional["Imputation"]] = relationship(
+        "Imputation", back_populates="projects"
+    )
     work_breakdown_structure: Mapped[Optional["WorkBreakdownStructure"]] = relationship(
         "WorkBreakdownStructure",
         foreign_keys=[work_breakdown_structure_id],
@@ -241,10 +278,14 @@ class Task(A2RPBase, TimestampMixin, RevisionMixin):
     )
     imputation_ce_old_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     verify_work_breakdown_structure_id: Mapped[Optional[int]] = mapped_column(
-        Integer, ForeignKey("a2rp.work_breakdown_structure.work_breakdown_structure_id"), nullable=True
+        Integer,
+        ForeignKey("a2rp.work_breakdown_structure.work_breakdown_structure_id"),
+        nullable=True,
     )
     element_work_breakdown_structure_id: Mapped[Optional[int]] = mapped_column(
-        Integer, ForeignKey("a2rp.work_breakdown_structure.work_breakdown_structure_id"), nullable=True
+        Integer,
+        ForeignKey("a2rp.work_breakdown_structure.work_breakdown_structure_id"),
+        nullable=True,
     )
     organizational_unit_manager_id: Mapped[Optional[int]] = mapped_column(
         Integer, ForeignKey("a2rp.organizational_unit.organizational_unit_id"), nullable=True
@@ -295,7 +336,9 @@ class Task(A2RPBase, TimestampMixin, RevisionMixin):
     early_end: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     late_start: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     late_end: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
-    milestone_estimated_end_date: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    milestone_estimated_end_date: Mapped[Optional[datetime]] = mapped_column(
+        DateTime, nullable=True
+    )
     validity_date: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
 
     # Cost fields
@@ -403,9 +446,7 @@ class Task(A2RPBase, TimestampMixin, RevisionMixin):
     )
 
     # Assignments
-    assignments: Mapped[List["Assignment"]] = relationship(
-        "Assignment", back_populates="task"
-    )
+    assignments: Mapped[List["Assignment"]] = relationship("Assignment", back_populates="task")
 
     def __repr__(self) -> str:
         return f"<Task(id={self.task_id}, name='{self.name}', status_id={self.task_status_id})>"
@@ -451,13 +492,19 @@ class Resource(A2RPBase, TimestampMixin, RevisionMixin):
         Integer, ForeignKey("a2rp.organizational_unit.organizational_unit_id"), nullable=True
     )
     resource_breakdown_structure_id: Mapped[Optional[int]] = mapped_column(
-        Integer, ForeignKey("a2rp.resource_breakdown_structure.resource_breakdown_structure_id"), nullable=True
+        Integer,
+        ForeignKey("a2rp.resource_breakdown_structure.resource_breakdown_structure_id"),
+        nullable=True,
     )
     resource_breakdown_structure_1_id: Mapped[Optional[int]] = mapped_column(
-        Integer, ForeignKey("a2rp.resource_breakdown_structure.resource_breakdown_structure_id"), nullable=True
+        Integer,
+        ForeignKey("a2rp.resource_breakdown_structure.resource_breakdown_structure_id"),
+        nullable=True,
     )
     resource_breakdown_structure_2_id: Mapped[Optional[int]] = mapped_column(
-        Integer, ForeignKey("a2rp.resource_breakdown_structure.resource_breakdown_structure_id"), nullable=True
+        Integer,
+        ForeignKey("a2rp.resource_breakdown_structure.resource_breakdown_structure_id"),
+        nullable=True,
     )
     property_id: Mapped[Optional[int]] = mapped_column(
         Integer, ForeignKey("a2rp.property.property_id"), nullable=True
@@ -490,12 +537,19 @@ class Resource(A2RPBase, TimestampMixin, RevisionMixin):
     base_calendar: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
 
     # Relationships
-    resource_status: Mapped["ResourceStatus"] = relationship("ResourceStatus", back_populates="resources")
+    resource_status: Mapped["ResourceStatus"] = relationship(
+        "ResourceStatus", back_populates="resources"
+    )
     resource_type: Mapped["ResourceType"] = relationship("ResourceType", back_populates="resources")
     timesheet_manager: Mapped[Optional["Resource"]] = relationship(
-        "Resource", remote_side=[resource_id], foreign_keys=[timesheet_manager_id], backref="timesheet_reports"
+        "Resource",
+        remote_side=[resource_id],
+        foreign_keys=[timesheet_manager_id],
+        backref="timesheet_reports",
     )
-    nt_account: Mapped[Optional["NtAccount"]] = relationship("NtAccount", back_populates="resources")
+    nt_account: Mapped[Optional["NtAccount"]] = relationship(
+        "NtAccount", back_populates="resources"
+    )
     resource_cost_center: Mapped[Optional["CostCenter"]] = relationship(
         "CostCenter", foreign_keys=[resource_cost_center_id], back_populates="resource_cost_centers"
     )
@@ -576,9 +630,7 @@ class Assignment(A2RPBase, TimestampMixin, RevisionMixin):
     unique_id: Mapped[Optional[str]] = mapped_column(String(1000), nullable=True)
 
     # Foreign keys
-    task_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("a2rp.task.task_id"), nullable=False
-    )
+    task_id: Mapped[int] = mapped_column(Integer, ForeignKey("a2rp.task.task_id"), nullable=False)
     resource_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("a2rp.resource.resource_id"), nullable=False
     )
@@ -595,10 +647,14 @@ class Assignment(A2RPBase, TimestampMixin, RevisionMixin):
         Integer, ForeignKey("a2rp.imputation.imputation_id"), nullable=True
     )
     verify_work_breakdown_structure_id: Mapped[Optional[int]] = mapped_column(
-        Integer, ForeignKey("a2rp.work_breakdown_structure.work_breakdown_structure_id"), nullable=True
+        Integer,
+        ForeignKey("a2rp.work_breakdown_structure.work_breakdown_structure_id"),
+        nullable=True,
     )
     element_work_breakdown_structure_id: Mapped[Optional[int]] = mapped_column(
-        Integer, ForeignKey("a2rp.work_breakdown_structure.work_breakdown_structure_id"), nullable=True
+        Integer,
+        ForeignKey("a2rp.work_breakdown_structure.work_breakdown_structure_id"),
+        nullable=True,
     )
     organizational_unit_manager_id: Mapped[Optional[int]] = mapped_column(
         Integer, ForeignKey("a2rp.organizational_unit.organizational_unit_id"), nullable=True
@@ -689,9 +745,7 @@ class AssignmentByMonth(A2RPBase):
     project_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("a2rp.project.project_id"), nullable=False
     )
-    task_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("a2rp.task.task_id"), nullable=False
-    )
+    task_id: Mapped[int] = mapped_column(Integer, ForeignKey("a2rp.task.task_id"), nullable=False)
 
     # Cost fields
     cost: Mapped[Optional[Decimal]] = mapped_column(Numeric, nullable=True)

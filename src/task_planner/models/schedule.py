@@ -1,12 +1,15 @@
 """
 Schedule model for representing generated schedules.
 """
-from sqlalchemy import Integer, String, Text, DateTime, Float, JSON, Enum
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from typing import List, Optional, Dict, Any
-from datetime import datetime
-import enum
 
+import enum
+from datetime import datetime
+from typing import Any, Dict, List, Optional
+
+from sqlalchemy import JSON, DateTime, Enum, Float, Integer, String, Text
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from . import ScheduleException, Task
 from .base import Base, TimestampMixin
 
 
@@ -39,9 +42,7 @@ class Schedule(Base, TimestampMixin):
     objective_value: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     solver_used: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
     solve_time: Mapped[Optional[float]] = mapped_column(Float, nullable=True)  # in seconds
-    optimization_metadata: Mapped[Optional[Dict[str, Any]]] = mapped_column(
-        JSON, nullable=True
-    )
+    optimization_metadata: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON, nullable=True)
 
     # Relationships
     tasks: Mapped[List["Task"]] = relationship("Task", back_populates="schedule")

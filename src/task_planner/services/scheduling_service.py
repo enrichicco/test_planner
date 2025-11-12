@@ -1,24 +1,26 @@
 """
 Scheduling service for managing schedules and assignments.
 """
-from typing import List, Optional, Dict, Any
-from datetime import datetime
-from sqlalchemy.orm import Session
-from sqlalchemy import and_
 
+from datetime import datetime, timezone
+from typing import List, Optional
+
+from sqlalchemy import and_
+from sqlalchemy.orm import Session
+
+from ..config import settings
 from ..models import (
-    Schedule,
-    Task,
+    Assignment,
+    ExceptionType,
     Person,
     Resource,
-    Assignment,
+    Schedule,
     ScheduleException,
-    ExceptionType,
     ScheduleStatus,
+    Task,
     TaskStatus,
 )
 from ..scheduler import SchedulerEngine
-from ..config import settings
 
 
 class SchedulingService:
@@ -75,7 +77,7 @@ class SchedulingService:
             raise ValueError("No tasks available for scheduling")
 
         # Fetch available people
-        people_query = self.db.query(Person).filter(Person.is_available == True)
+        people_query = self.db.query(Person).filter(Person.is_available)
         if team_id:
             people_query = people_query.filter(Person.team_id == team_id)
         people = people_query.all()
@@ -84,7 +86,7 @@ class SchedulingService:
             raise ValueError("No people available for scheduling")
 
         # Fetch available resources
-        resources = self.db.query(Resource).filter(Resource.is_available == True).all()
+        resources = self.db.query(Resource).filter(Resource.is_available).all()
 
         # Create schedule using the engine
         schedule, assignments, exceptions = self.engine.create_schedule(
@@ -157,13 +159,13 @@ class SchedulingService:
 
         # Delete existing assignments for tasks being rescheduled
         task_ids_to_reschedule = [t.id for t in tasks]
-        self.db.query(Assignment).filter(
-            Assignment.task_id.in_(task_ids_to_reschedule)
-        ).delete(synchronize_session=False)
+        self.db.query(Assignment).filter(Assignment.task_id.in_(task_ids_to_reschedule)).delete(
+            synchronize_session=False
+        )
 
         # Fetch available people
-        people = self.db.query(Person).filter(Person.is_available == True).all()
-        resources = self.db.query(Resource).filter(Resource.is_available == True).all()
+        people = self.db.query(Person).filter(Person.is_available).all()
+        resources = self.db.query(Resource).filter(Resource.is_available).all()
 
         # Create new schedule
         new_schedule, assignments, exceptions = self.engine.create_schedule(
@@ -180,7 +182,7 @@ class SchedulingService:
         schedule.solver_used = new_schedule.solver_used
         schedule.solve_time = new_schedule.solve_time
         schedule.optimization_metadata = new_schedule.optimization_metadata
-        schedule.updated_at = datetime.utcnow()
+        schedule.updated_at = datetime.now(timezone.utc)
 
         # Save new assignments
         for assignment in assignments:
@@ -190,9 +192,9 @@ class SchedulingService:
         self.db.query(ScheduleException).filter(
             and_(
                 ScheduleException.schedule_id == schedule_id,
-                ScheduleException.resolved == False,
+                ~ScheduleException.resolved,
             )
-        ).update({"resolved": True, "resolved_at": datetime.utcnow()})
+        ).update({"resolved": True, "resolved_at": datetime.now(timezone.utc)})
 
         # Save new exceptions
         for exc_data in exceptions:
@@ -237,7 +239,7 @@ class SchedulingService:
             raise ValueError(f"Exception {exception_id} not found")
 
         exception.resolved = True
-        exception.resolved_at = datetime.utcnow()
+        exception.resolved_at = datetime.now(timezone.utc)
         exception.resolution_notes = resolution
 
         self.db.commit()
@@ -274,12 +276,7 @@ class SchedulingService:
 
     def get_assignments(self, schedule_id: int) -> List[Assignment]:
         """Get all assignments for a schedule."""
-        return (
-            self.db.query(Assignment)
-            .join(Task)
-            .filter(Task.schedule_id == schedule_id)
-            .all()
-        )
+        return self.db.query(Assignment).join(Task).filter(Task.schedule_id == schedule_id).all()
 
     def get_exceptions(
         self,

@@ -35,7 +35,8 @@ class TeamService:
 
     def get_all_teams(self) -> List[Team]:
         """Get all teams."""
-        return self.db.query(Team).all()
+        teams: List[Team] = self.db.query(Team).all()
+        return teams
 
     def add_member(self, team_id: int, person_id: int) -> None:
         """Add a person to a team."""

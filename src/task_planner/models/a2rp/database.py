@@ -1,14 +1,16 @@
 """
 Database connection and session management for a2rp schema.
 """
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, Session
+
 from contextlib import contextmanager
-from typing import Generator
+from typing import Any, Generator
+
+from sqlalchemy import create_engine, select
+from sqlalchemy.engine import Result
+from sqlalchemy.orm import Session, sessionmaker
 
 from ...config import settings
 from .base import A2RPBase
-
 
 # Create engine for a2rp schema
 engine = create_engine(
@@ -74,8 +76,9 @@ def test_connection() -> bool:
     """
     try:
         with get_db_context() as db:
-            # Try a simple query
-            db.execute("SELECT 1")
+            # MyPy-friendly execute
+            result: Result[Any] = db.execute(select(1))
+            result.scalar_one()
         return True
     except Exception as e:
         print(f"Database connection failed: {e}")

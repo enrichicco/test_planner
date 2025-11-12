@@ -2,14 +2,17 @@
 Lookup and reference table models for a2rp schema.
 These tables store status values, types, and other reference data.
 """
+
+from typing import TYPE_CHECKING, List, Optional
+
 from sqlalchemy import Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from typing import Optional, List, TYPE_CHECKING
 
 from .base import A2RPBase
 
 if TYPE_CHECKING:
-    from .core import Project, Task, Resource, ProcessingOrder
+    from . import ProcessingOrder
+    from .core import Project, Resource, Task
 
 
 class ProjectStatus(A2RPBase):
@@ -22,9 +25,7 @@ class ProjectStatus(A2RPBase):
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     # Relationships
-    projects: Mapped[List["Project"]] = relationship(
-        "Project", back_populates="project_status"
-    )
+    projects: Mapped[List["Project"]] = relationship("Project", back_populates="project_status")
 
     def __repr__(self) -> str:
         return f"<ProjectStatus(id={self.project_status_id}, name='{self.name}')>"
@@ -40,9 +41,7 @@ class ProjectType(A2RPBase):
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     # Relationships
-    projects: Mapped[List["Project"]] = relationship(
-        "Project", back_populates="project_type"
-    )
+    projects: Mapped[List["Project"]] = relationship("Project", back_populates="project_type")
 
     def __repr__(self) -> str:
         return f"<ProjectType(id={self.project_type_id}, name='{self.name}')>"
@@ -74,9 +73,7 @@ class ResourceStatus(A2RPBase):
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     # Relationships
-    resources: Mapped[List["Resource"]] = relationship(
-        "Resource", back_populates="resource_status"
-    )
+    resources: Mapped[List["Resource"]] = relationship("Resource", back_populates="resource_status")
 
     def __repr__(self) -> str:
         return f"<ResourceStatus(id={self.resource_status_id}, name='{self.name}')>"
@@ -92,9 +89,7 @@ class ResourceType(A2RPBase):
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     # Relationships
-    resources: Mapped[List["Resource"]] = relationship(
-        "Resource", back_populates="resource_type"
-    )
+    resources: Mapped[List["Resource"]] = relationship("Resource", back_populates="resource_type")
 
     def __repr__(self) -> str:
         return f"<ResourceType(id={self.resource_type_id}, name='{self.name}')>"
@@ -177,9 +172,7 @@ class NtAccount(A2RPBase):
     alias: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     # Relationships
-    resources: Mapped[List["Resource"]] = relationship(
-        "Resource", back_populates="nt_account"
-    )
+    resources: Mapped[List["Resource"]] = relationship("Resource", back_populates="nt_account")
 
     def __repr__(self) -> str:
         return f"<NtAccount(id={self.nt_account_id}, name='{self.name}')>"
@@ -195,9 +188,7 @@ class Property(A2RPBase):
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     # Relationships
-    resources: Mapped[List["Resource"]] = relationship(
-        "Resource", back_populates="property"
-    )
+    resources: Mapped[List["Resource"]] = relationship("Resource", back_populates="property")
 
     def __repr__(self) -> str:
         return f"<Property(id={self.property_id}, name='{self.name}')>"

@@ -1,10 +1,13 @@
 """
 Team model for organizing people into groups.
 """
-from sqlalchemy import Integer, String, Text, Boolean
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from typing import List, Optional
 
+from sqlalchemy import Boolean, Integer, String, Text
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from . import Person, Task
 from .base import Base, TimestampMixin
 
 

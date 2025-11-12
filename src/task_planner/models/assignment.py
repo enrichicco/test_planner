@@ -1,11 +1,14 @@
 """
 Assignment model for linking tasks to people and resources.
 """
-from sqlalchemy import Integer, ForeignKey, DateTime, Float
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from typing import Optional
-from datetime import datetime
 
+from datetime import datetime
+from typing import Optional
+
+from sqlalchemy import DateTime, Float, ForeignKey, Integer
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from . import Person, Resource, Task
 from .base import Base, TimestampMixin
 
 
@@ -35,9 +38,7 @@ class Assignment(Base, TimestampMixin):
     # Relationships
     task: Mapped["Task"] = relationship("Task", back_populates="assignments")
     person: Mapped[Optional["Person"]] = relationship("Person", back_populates="assignments")
-    resource: Mapped[Optional["Resource"]] = relationship(
-        "Resource", back_populates="assignments"
-    )
+    resource: Mapped[Optional["Resource"]] = relationship("Resource", back_populates="assignments")
 
     def __repr__(self) -> str:
         return f"<Assignment(id={self.id}, task_id={self.task_id}, person_id={self.person_id})>"

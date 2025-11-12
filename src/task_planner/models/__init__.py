@@ -1,11 +1,11 @@
+from .assignment import Assignment
 from .base import Base
-from .team import Team
+from .exception import ExceptionType, ScheduleException
 from .person import Person
 from .resource import Resource
-from .task import Task, TaskStatus, TaskPriority
-from .assignment import Assignment
 from .schedule import Schedule, ScheduleStatus
-from .exception import ScheduleException, ExceptionType
+from .task import Task, TaskPriority, TaskStatus
+from .team import Team
 
 __all__ = [
     "Base",

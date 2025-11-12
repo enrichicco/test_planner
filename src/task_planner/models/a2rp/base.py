@@ -1,10 +1,12 @@
 """
 Base model for a2rp schema SQLAlchemy models.
 """
+
 from datetime import datetime
+from typing import Optional
+
 from sqlalchemy import DateTime
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-from typing import Optional
 
 
 class A2RPBase(DeclarativeBase):

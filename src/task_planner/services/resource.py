@@ -52,7 +52,9 @@ class ResourceService:
         if available_only:
             query = query.filter(Resource.available)
 
-        return query.all()
+        resources: List[Resource] = query.all()
+
+        return resources
 
     def update_resource(
         self,

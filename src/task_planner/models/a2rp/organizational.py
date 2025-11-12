@@ -2,15 +2,18 @@
 Organizational and structure models for a2rp schema.
 Includes organizational units, cost centers, customers, and breakdown structures.
 """
-from sqlalchemy import Integer, String, Text, Numeric, ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from typing import Optional, List, TYPE_CHECKING
+
 from decimal import Decimal
+from typing import TYPE_CHECKING, List, Optional
+
+from sqlalchemy import ForeignKey, Integer, Numeric, String, Text
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import A2RPBase
 
 if TYPE_CHECKING:
-    from .core import Project, Task, Resource, Assignment, ProcessingOrder
+    from . import ProcessingOrder
+    from .core import Assignment, Project, Resource, Task
 
 
 class CostCenter(A2RPBase):
@@ -68,9 +71,7 @@ class Customer(A2RPBase):
     alias: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     # Relationships
-    projects: Mapped[List["Project"]] = relationship(
-        "Project", back_populates="customer"
-    )
+    projects: Mapped[List["Project"]] = relationship("Project", back_populates="customer")
 
     def __repr__(self) -> str:
         return f"<Customer(id={self.customer_id}, name='{self.name}')>"
@@ -87,9 +88,7 @@ class Imputation(A2RPBase):
     alias: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     # Relationships
-    projects: Mapped[List["Project"]] = relationship(
-        "Project", back_populates="imputation"
-    )
+    projects: Mapped[List["Project"]] = relationship("Project", back_populates="imputation")
     tasks: Mapped[List["Task"]] = relationship(
         "Task", foreign_keys="Task.imputation_ce_id", back_populates="imputation_ce"
     )
@@ -111,9 +110,7 @@ class OrganizationalUnit(A2RPBase):
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     alias: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     rate: Mapped[Optional[Decimal]] = mapped_column(Numeric, nullable=True)
-    monthly_hours_availability: Mapped[Optional[Decimal]] = mapped_column(
-        Numeric, nullable=True
-    )
+    monthly_hours_availability: Mapped[Optional[Decimal]] = mapped_column(Numeric, nullable=True)
 
     # Relationships
     resources: Mapped[List["Resource"]] = relationship(
@@ -129,9 +126,7 @@ class OrganizationalUnit(A2RPBase):
     projects: Mapped[List["Project"]] = relationship(
         "Project", back_populates="project_manager_organizational_unit"
     )
-    tasks: Mapped[List["Task"]] = relationship(
-        "Task", back_populates="organizational_unit_manager"
-    )
+    tasks: Mapped[List["Task"]] = relationship("Task", back_populates="organizational_unit_manager")
     assignments: Mapped[List["Assignment"]] = relationship(
         "Assignment", back_populates="organizational_unit_manager"
     )
@@ -194,7 +189,9 @@ class WorkBreakdownStructure(A2RPBase):
     )
 
     def __repr__(self) -> str:
-        return f"<WorkBreakdownStructure(id={self.work_breakdown_structure_id}, name='{self.name}')>"
+        return (
+            f"<WorkBreakdownStructure(id={self.work_breakdown_structure_id}, name='{self.name}')>"
+        )
 
 
 class ResourceBreakdownStructure(A2RPBase):
@@ -202,9 +199,7 @@ class ResourceBreakdownStructure(A2RPBase):
 
     __tablename__ = "resource_breakdown_structure"
 
-    resource_breakdown_structure_id: Mapped[int] = mapped_column(
-        Integer, primary_key=True
-    )
+    resource_breakdown_structure_id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 

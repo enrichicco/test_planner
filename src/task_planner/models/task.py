@@ -1,12 +1,15 @@
 """
 Task model for representing work items to be scheduled.
 """
-from sqlalchemy import Integer, String, Text, Float, DateTime, ForeignKey, JSON, Enum
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from typing import List, Optional, Dict, Any
-from datetime import datetime
-import enum
 
+import enum
+from datetime import datetime
+from typing import Any, Dict, List, Optional
+
+from sqlalchemy import JSON, DateTime, Enum, Float, ForeignKey, Integer, String, Text
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from . import Assignment, Schedule, Team
 from .base import Base, TimestampMixin
 
 
@@ -39,12 +42,8 @@ class Task(Base, TimestampMixin):
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     duration: Mapped[float] = mapped_column(Float, nullable=False)  # in hours
-    status: Mapped[TaskStatus] = mapped_column(
-        Enum(TaskStatus), default=TaskStatus.PENDING
-    )
-    priority: Mapped[TaskPriority] = mapped_column(
-        Enum(TaskPriority), default=TaskPriority.MEDIUM
-    )
+    status: Mapped[TaskStatus] = mapped_column(Enum(TaskStatus), default=TaskStatus.PENDING)
+    priority: Mapped[TaskPriority] = mapped_column(Enum(TaskPriority), default=TaskPriority.MEDIUM)
 
     # Scheduling constraints
     earliest_start: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
@@ -53,14 +52,10 @@ class Task(Base, TimestampMixin):
 
     # Resource requirements
     required_skills: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON, nullable=True)
-    required_resources: Mapped[Optional[Dict[str, Any]]] = mapped_column(
-        JSON, nullable=True
-    )
+    required_resources: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON, nullable=True)
 
     # Foreign Keys
-    team_id: Mapped[Optional[int]] = mapped_column(
-        Integer, ForeignKey("teams.id"), nullable=True
-    )
+    team_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("teams.id"), nullable=True)
     schedule_id: Mapped[Optional[int]] = mapped_column(
         Integer, ForeignKey("schedules.id"), nullable=True
     )
@@ -70,9 +65,7 @@ class Task(Base, TimestampMixin):
 
     # Relationships
     team: Mapped[Optional["Team"]] = relationship("Team", back_populates="tasks")
-    schedule: Mapped[Optional["Schedule"]] = relationship(
-        "Schedule", back_populates="tasks"
-    )
+    schedule: Mapped[Optional["Schedule"]] = relationship("Schedule", back_populates="tasks")
     assignments: Mapped[List["Assignment"]] = relationship(
         "Assignment", back_populates="task", cascade="all, delete-orphan"
     )

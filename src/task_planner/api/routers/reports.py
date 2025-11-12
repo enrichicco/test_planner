@@ -1,22 +1,20 @@
 """
 Report API endpoints.
 """
+
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import FileResponse, JSONResponse
 from sqlalchemy.orm import Session
-from typing import Optional
 
 from ...models.database import get_db
-from ...services import SchedulingService
 from ...reports import ReportGenerator, ScheduleReport
+from ...services import SchedulingService
 
 router = APIRouter()
 
 
-@router.get("/{schedule_id}/json")
-def generate_json_report(
-    schedule_id: int, db: Session = Depends(get_db)
-) -> JSONResponse:
+@router.get("/{schedule_id}/json")  # type: ignore[misc]
+def generate_json_report(schedule_id: int, db: Session = Depends(get_db)) -> JSONResponse:
     """Generate JSON report for a schedule."""
     service = SchedulingService(db)
     schedule = service.get_schedule(schedule_id)
@@ -28,7 +26,7 @@ def generate_json_report(
 
     # Get tasks and people
     task_ids = [a.task_id for a in assignments]
-    from ...models import Task, Person
+    from ...models import Person, Task
 
     tasks = db.query(Task).filter(Task.id.in_(task_ids)).all() if task_ids else []
     person_ids = [a.person_id for a in assignments if a.person_id]
@@ -41,10 +39,8 @@ def generate_json_report(
     return JSONResponse(content=report_data)
 
 
-@router.get("/{schedule_id}/html")
-def generate_html_report(
-    schedule_id: int, db: Session = Depends(get_db)
-) -> FileResponse:
+@router.get("/{schedule_id}/html")  # type: ignore[misc]
+def generate_html_report(schedule_id: int, db: Session = Depends(get_db)) -> FileResponse:
     """Generate HTML report for a schedule."""
     service = SchedulingService(db)
     schedule = service.get_schedule(schedule_id)
@@ -56,7 +52,7 @@ def generate_html_report(
 
     # Get tasks and people
     task_ids = [a.task_id for a in assignments]
-    from ...models import Task, Person
+    from ...models import Person, Task
 
     tasks = db.query(Task).filter(Task.id.in_(task_ids)).all() if task_ids else []
     person_ids = [a.person_id for a in assignments if a.person_id]
@@ -78,10 +74,8 @@ def generate_html_report(
     )
 
 
-@router.get("/{schedule_id}/csv/timeline")
-def generate_timeline_csv(
-    schedule_id: int, db: Session = Depends(get_db)
-) -> FileResponse:
+@router.get("/{schedule_id}/csv/timeline")  # type: ignore[misc]
+def generate_timeline_csv(schedule_id: int, db: Session = Depends(get_db)) -> FileResponse:
     """Generate CSV report for task timeline."""
     service = SchedulingService(db)
     schedule = service.get_schedule(schedule_id)
@@ -93,7 +87,7 @@ def generate_timeline_csv(
 
     # Get tasks and people
     task_ids = [a.task_id for a in assignments]
-    from ...models import Task, Person
+    from ...models import Person, Task
 
     tasks = db.query(Task).filter(Task.id.in_(task_ids)).all() if task_ids else []
     person_ids = [a.person_id for a in assignments if a.person_id]

@@ -1,11 +1,13 @@
 """
 Problem builder for converting database models to PyJobShop problems.
 """
-from typing import List, Dict, Any, Optional
-from datetime import datetime, timedelta
-from pyjobshop import Model, Task as PyJobShopTask, Machine, Job, Resource as PyJobShopResource
 
-from ..models import Task, Person, Resource, Team
+from datetime import datetime
+from typing import Dict, List, Optional
+
+from pyjobshop import Model
+
+from ..models import Person, Resource, Task
 
 
 class ProblemBuilder:
@@ -41,20 +43,20 @@ class ProblemBuilder:
         # Create machines (people)
         for idx, person in enumerate(people):
             if person.is_available:
-                machine = self.model.add_machine(
-                    name=f"person_{person.id}",
-                    optional=False,
-                )
+                # machine = self.model.add_machine(
+                #     name=f"person_{person.id}",
+                #     optional=False,
+                # )
                 self.person_mapping[person.id] = idx
 
         # Create resources
         for idx, resource in enumerate(resources):
             if resource.is_available:
-                pj_resource = self.model.add_resource(
-                    name=f"resource_{resource.id}",
-                    capacity=int(resource.capacity),
-                    renewable=resource.is_renewable,
-                )
+                # pj_resource = self.model.add_resource(
+                #     name=f"resource_{resource.id}",
+                #     capacity=int(resource.capacity),
+                #     renewable=resource.is_renewable,
+                # )
                 self.resource_mapping[resource.id] = idx
 
         # Create jobs and tasks
@@ -100,9 +102,7 @@ class ProblemBuilder:
 
                     # Add deadline if specified
                     if task.deadline:
-                        deadline_minutes = int(
-                            (task.deadline - start_date).total_seconds() / 60
-                        )
+                        deadline_minutes = int((task.deadline - start_date).total_seconds() / 60)
                         if deadline_minutes > 0:
                             pj_task.add_deadline(deadline_minutes)
 
