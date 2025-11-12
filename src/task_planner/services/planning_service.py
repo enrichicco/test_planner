@@ -105,7 +105,7 @@ class PlanningService:
             # Check assigned person availability (from assignments)
             for assignment in task.assignments:
                 person_id = assignment.person_id
-                if person_id in person_availability:
+                if person_id is not None and person_id in person_availability:
                     if person_availability[person_id] > earliest_start:
                         earliest_start = person_availability[person_id]
 
@@ -127,7 +127,8 @@ class PlanningService:
 
             # Update person availability for all assigned people
             for assignment in task.assignments:
-                person_availability[assignment.person_id] = task_end
+                if assignment.person_id is not None:
+                    person_availability[assignment.person_id] = task_end
 
         return schedule
 
@@ -212,6 +213,9 @@ class PlanningService:
             # Check assigned person availability (from assignments)
             for assignment in task.assignments:
                 person_id = assignment.person_id
+                if person_id is None:
+                    continue
+
                 if person_id not in resource_usage:
                     resource_usage[person_id] = []
 
