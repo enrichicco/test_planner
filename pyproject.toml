@@ -33,6 +33,7 @@ target-version = "py312"
 strict = true
 ignore_missing_imports = true
 explicit_package_bases = true
+disallow_untyped_decorators = false
 exclude = ".*/__init__\\.py$"
 
 [dependency-groups]
