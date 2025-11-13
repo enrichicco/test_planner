@@ -1,276 +1,218 @@
 #!/usr/bin/env python3
 """
-Example usage of the Task Planner Service.
+Example usage of the Task Planner Service using a2rp schema.
 
 This script demonstrates:
 - Setting up the database
-- Creating teams, people, and resources
-- Creating tasks with dependencies
-- Scheduling tasks
-- Handling exceptions and rescheduling
-- Generating reports
+- Creating projects, tasks, and resources
+- Creating assignments
+- Using the a2rp (MCR) schema
 """
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
-from task_planner.models import TaskStatus
-from task_planner.models.a2rp import ResourceType
-from task_planner.reports import ReportGenerator
-from task_planner.services import (
-    PersonService,
-    PlanningService,
+from task_planner.models.a2rp.database import SessionLocal, init_a2rp_db
+from task_planner.services.a2rp import (
+    AssignmentService,
+    ProjectService,
     ResourceService,
     TaskService,
-    TeamService,
 )
-from task_planner.utils import get_db_session, init_db
 
 
 def main() -> None:
     """Run the example."""
     print("=" * 80)
-    print("Task Planner Service - Example Usage")
+    print("Task Planner Service - Example Usage (a2rp/MCR Schema)")
     print("=" * 80)
     print()
 
     # Initialize database
     print("1. Initializing database...")
-    init_db()
+    init_a2rp_db()
     print("   ✓ Database initialized")
     print()
 
     # Get database session
-    db = get_db_session()
+    db = SessionLocal()
 
     # Initialize services
-    team_service = TeamService(db)
-    person_service = PersonService(db)
-    resource_service = ResourceService(db)
+    project_service = ProjectService(db)
     task_service = TaskService(db)
-    planning_service = PlanningService(db)
-    report_gen = ReportGenerator(db)
+    resource_service = ResourceService(db)
+    assignment_service = AssignmentService(db)
 
     try:
-        # Create teams
-        print("2. Creating teams...")
-        dev_team = team_service.create_team(
-            name="Development Team",
-            description="Software development team",
-        )
-        qa_team = team_service.create_team(
-            name="QA Team",
-            description="Quality assurance team",
-        )
-        print(f"   ✓ Created team: {dev_team.name}")
-        print(f"   ✓ Created team: {qa_team.name}")
-        print()
+        # Note: In a real application, you would need to create lookup tables first
+        # (project_type, project_status, task_status, resource_type, resource_status)
+        # For this example, we assume they exist with IDs 1, 2, etc.
 
-        # Create people
-        print("3. Creating people...")
-        alice = person_service.create_person(
-            name="Alice Johnson",
-            email="alice@example.com",
-            role="Senior Developer",
+        # Create a project
+        print("2. Creating project...")
+        project = project_service.create_project(
+            name="Web Application Development",
+            description="Build a new web application",
+            project_type_id=1,  # Assumes project_type exists
+            project_status_id=1,  # Assumes status "Active" exists
+            start_date=datetime.now(),
+            end_date=datetime.now() + timedelta(days=90),
         )
-        bob = person_service.create_person(
-            name="Bob Smith",
-            email="bob@example.com",
-            role="Developer",
-        )
-        charlie = person_service.create_person(
-            name="Charlie Davis",
-            email="charlie@example.com",
-            role="QA Engineer",
-        )
-        print(f"   ✓ Created person: {alice.name}")
-        print(f"   ✓ Created person: {bob.name}")
-        print(f"   ✓ Created person: {charlie.name}")
-        print()
-
-        # Add people to teams
-        print("4. Adding people to teams...")
-        team_service.add_member(dev_team.id, alice.id)
-        team_service.add_member(dev_team.id, bob.id)
-        team_service.add_member(qa_team.id, charlie.id)
-        print(f"   ✓ Added {alice.name} to {dev_team.name}")
-        print(f"   ✓ Added {bob.name} to {dev_team.name}")
-        print(f"   ✓ Added {charlie.name} to {qa_team.name}")
+        print(f"   ✓ Created project: {project.name}")
         print()
 
         # Create resources
-        print("5. Creating resources...")
-        python_skill = resource_service.create_resource(
-            name="Python Programming",
-            resource_type=ResourceType.SKILL,
-            description="Python development skills",
+        print("3. Creating resources...")
+        alice = resource_service.create_resource(
+            name="Alice Johnson",
+            email="alice@example.com",
+            resource_type_id=1,  # Assumes "Developer" type exists
+            resource_status_id=1,  # Assumes "Available" status exists
         )
-        testing_tool = resource_service.create_resource(
-            name="Selenium",
-            resource_type=ResourceType.EQUIPMENT,
-            description="Selenium testing framework",
+        bob = resource_service.create_resource(
+            name="Bob Smith",
+            email="bob@example.com",
+            resource_type_id=1,
+            resource_status_id=1,
         )
-        print(f"   ✓ Created resource: {python_skill.name}")
-        print(f"   ✓ Created resource: {testing_tool.name}")
-        print()
-
-        # Add skills to people
-        print("6. Adding skills to people...")
-        person_service.add_skill(alice.id, python_skill.id)
-        person_service.add_skill(bob.id, python_skill.id)
-        person_service.add_skill(charlie.id, testing_tool.id)
-        print(f"   ✓ Added {python_skill.name} skill to {alice.name}")
-        print(f"   ✓ Added {python_skill.name} skill to {bob.name}")
-        print(f"   ✓ Added {testing_tool.name} skill to {charlie.name}")
+        charlie = resource_service.create_resource(
+            name="Charlie Davis",
+            email="charlie@example.com",
+            resource_type_id=2,  # Assumes "QA" type exists
+            resource_status_id=1,
+        )
+        print(f"   ✓ Created resource: {alice.name}")
+        print(f"   ✓ Created resource: {bob.name}")
+        print(f"   ✓ Created resource: {charlie.name}")
         print()
 
         # Create tasks
-        print("7. Creating tasks...")
+        print("4. Creating tasks...")
         task1 = task_service.create_task(
             name="Design database schema",
             description="Design and document the database schema",
-            estimated_hours=8.0,
-            priority=10,
-            team_id=dev_team.id,
-            assigned_person_id=alice.id,
+            project_id=project.project_id,
+            task_status_id=1,  # Assumes "Not Started" status exists
+            start_date=datetime.now(),
+            end_date=datetime.now() + timedelta(days=2),
+            work=16.0,  # 16 hours
         )
 
         task2 = task_service.create_task(
             name="Implement user authentication",
             description="Implement user login and registration",
-            estimated_hours=16.0,
-            priority=9,
-            team_id=dev_team.id,
-            assigned_person_id=bob.id,
+            project_id=project.project_id,
+            task_status_id=1,
+            start_date=datetime.now() + timedelta(days=2),
+            end_date=datetime.now() + timedelta(days=5),
+            work=24.0,  # 24 hours
         )
 
         task3 = task_service.create_task(
             name="Create API endpoints",
             description="Create REST API endpoints",
-            estimated_hours=12.0,
-            priority=8,
-            team_id=dev_team.id,
-            assigned_person_id=alice.id,
+            project_id=project.project_id,
+            task_status_id=1,
+            start_date=datetime.now() + timedelta(days=5),
+            end_date=datetime.now() + timedelta(days=8),
+            work=24.0,  # 24 hours
         )
 
         task4 = task_service.create_task(
             name="Test authentication flow",
             description="Write and run tests for authentication",
-            estimated_hours=8.0,
-            priority=7,
-            team_id=qa_team.id,
-            assigned_person_id=charlie.id,
+            project_id=project.project_id,
+            task_status_id=1,
+            start_date=datetime.now() + timedelta(days=8),
+            end_date=datetime.now() + timedelta(days=10),
+            work=16.0,  # 16 hours
         )
 
-        print(f"   ✓ Created task: {task1.name}")
-        print(f"   ✓ Created task: {task2.name}")
-        print(f"   ✓ Created task: {task3.name}")
-        print(f"   ✓ Created task: {task4.name}")
+        print(f"   ✓ Created task: {task1.name} ({task1.work}h)")
+        print(f"   ✓ Created task: {task2.name} ({task2.work}h)")
+        print(f"   ✓ Created task: {task3.name} ({task3.work}h)")
+        print(f"   ✓ Created task: {task4.name} ({task4.work}h)")
         print()
 
-        # Add task dependencies
-        print("8. Adding task dependencies...")
-        task_service.add_dependency(task2.id, task1.id)  # Auth depends on schema
-        task_service.add_dependency(task3.id, task1.id)  # API depends on schema
-        task_service.add_dependency(task4.id, task2.id)  # Testing depends on auth
-        print("   ✓ Task dependencies added")
-        print()
-
-        # Add resource requirements
-        print("9. Adding resource requirements...")
-        task_service.add_resource_requirement(task1.id, python_skill.id, 1.0)
-        task_service.add_resource_requirement(task2.id, python_skill.id, 1.0)
-        task_service.add_resource_requirement(task3.id, python_skill.id, 1.0)
-        task_service.add_resource_requirement(task4.id, testing_tool.id, 1.0)
-        print("   ✓ Resource requirements added")
-        print()
-
-        # Create schedule
-        print("10. Creating schedule using PyJobShop...")
-        tasks = [task1, task2, task3, task4]
-        start_date = datetime.now()
-
-        try:
-            schedule = planning_service.create_schedule(tasks, start_date)
-            print("    ✓ Schedule created successfully!")
-            print()
-            print("    Scheduled tasks:")
-            for task_id, (start, end) in schedule.items():
-                task = task_service.get_task(task_id)
-                duration = (end - start).total_seconds() / 3600
-                print(f"      - {getattr(task, 'name', None)}:")
-                print(f"        Start: {start.strftime('%Y-%m-%d %H:%M')}")
-                print(f"        End:   {end.strftime('%Y-%m-%d %H:%M')}")
-                print(f"        Duration: {duration:.1f} hours")
-        except Exception as e:
-            print(f"    ! Schedule creation encountered an issue: {e}")
-            print("      (This is expected with PyJobShop integration)")
-        print()
-
-        # Simulate task progress
-        print("11. Simulating task progress...")
-        task_service.update_task_status(task1.id, TaskStatus.IN_PROGRESS)
-        print(f"    ✓ {task1.name} started")
-        task_service.update_task_status(task1.id, TaskStatus.COMPLETED)
-        print(f"    ✓ {task1.name} completed")
-        print()
-
-        # Record an exception
-        print("12. Recording a task exception...")
-        task_service.record_exception(
-            task2.id,
-            "resource_unavailable",
-            "Developer on sick leave, task delayed",
+        # Create assignments
+        print("5. Creating assignments...")
+        assignment1 = assignment_service.create_assignment(
+            task_id=task1.task_id,
+            resource_id=alice.resource_id,
+            work=16.0,
+            start_date=task1.start_date,
+            end_date=task1.end_date,
         )
-        print(f"    ✓ Exception recorded for {task2.name}")
+        assignment2 = assignment_service.create_assignment(
+            task_id=task2.task_id,
+            resource_id=bob.resource_id,
+            work=24.0,
+            start_date=task2.start_date,
+            end_date=task2.end_date,
+        )
+        assignment3 = assignment_service.create_assignment(
+            task_id=task3.task_id,
+            resource_id=alice.resource_id,
+            work=24.0,
+            start_date=task3.start_date,
+            end_date=task3.end_date,
+        )
+        assignment4 = assignment_service.create_assignment(
+            task_id=task4.task_id,
+            resource_id=charlie.resource_id,
+            work=16.0,
+            start_date=task4.start_date,
+            end_date=task4.end_date,
+        )
+        print(f"   ✓ Assigned {alice.name} to {task1.name}")
+        print(f"   ✓ Assigned {bob.name} to {task2.name}")
+        print(f"   ✓ Assigned {alice.name} to {task3.name}")
+        print(f"   ✓ Assigned {charlie.name} to {task4.name}")
         print()
 
-        # Generate reports
-        print("13. Generating reports...")
+        # List all tasks for the project
+        print("6. Listing all project tasks...")
+        all_tasks = task_service.list_tasks(project_id=project.project_id)
+        print(f"   ✓ Found {len(all_tasks)} tasks for project '{project.name}'")
+        for t in all_tasks:
+            print(f"      - {t.name} (Work: {t.work}h)")
         print()
 
-        # Task summary
-        print("    Task Summary Report:")
-        summary = report_gen.generate_task_summary()
-        print(f"      Total tasks: {summary['total_tasks']}")
-        print("      Status breakdown:")
-        for status, count in summary["status_counts"].items():
-            if count > 0:
-                print(f"        - {status}: {count}")
-        print(f"      Total estimated hours: {summary['total_estimated_hours']:.1f}")
+        # List all assignments for a resource
+        print("7. Listing assignments for Alice...")
+        alice_assignments = assignment_service.list_assignments(
+            resource_id=alice.resource_id
+        )
+        print(f"   ✓ Found {len(alice_assignments)} assignments for {alice.name}")
         print()
 
-        # Person workload
-        print("    Person Workload Report:")
-        workload = report_gen.generate_person_workload_report()
-        for person in workload:
-            print(f"      {person['person_name']}:")
-            print(f"        Active tasks: {person['active_tasks']}")
-            print(f"        Estimated hours: {person['total_estimated_hours']:.1f}")
-            print(f"        Utilization: {person['utilization_days']:.1f} days")
+        # Update task status
+        print("8. Updating task status...")
+        updated_task = task_service.update_task(
+            task_id=task1.task_id, task_status_id=2  # Assumes "In Progress" exists
+        )
+        if updated_task:
+            print(f"   ✓ Updated status for {updated_task.name}")
         print()
 
-        # Resource utilization
-        print("    Resource Utilization Report:")
-        resources_report = report_gen.generate_resource_utilization_report()
-        for res in resources_report:
-            print(f"      {res['resource_name']} ({res['resource_type']}):")
-            print(f"        Capacity: {res['capacity']:.1f}")
-            print(f"        Current usage: {res['current_usage']:.1f}")
-            print(f"        Utilization: {res['utilization_percentage']:.1f}%")
-        print()
-
-        # Exception report
-        print("    Exception Report:")
-        exceptions = report_gen.generate_exception_report()
-        for exc in exceptions:
-            print(f"      Task: {exc['task_name']}")
-            print(f"        Type: {exc['exception_type']}")
-            print(f"        Description: {exc['description']}")
-            print(f"        Resolved: {exc['resolved']}")
+        # Update assignment with actual work
+        print("9. Recording actual work...")
+        updated_assignment = assignment_service.update_assignment(
+            assignment_id=assignment1.assignment_id, actual_work=18.0  # Took 18 hours
+        )
+        if updated_assignment:
+            print(
+                f"   ✓ Recorded {updated_assignment.actual_work}h actual work "
+                f"(estimated: {updated_assignment.work}h)"
+            )
         print()
 
         print("=" * 80)
         print("Example completed successfully!")
+        print("=" * 80)
+        print()
+        print("NOTE: This example assumes lookup tables exist (project_type, ")
+        print("      project_status, task_status, resource_type, resource_status).")
+        print("      In production, you would need to populate these first.")
         print("=" * 80)
 
     except Exception as e:

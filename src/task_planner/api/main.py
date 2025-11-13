@@ -8,7 +8,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from ..config import settings
-from .routers import people, reports, resources, schedules, tasks, teams
+from .routers.a2rp import assignments, projects, resources, tasks
 
 app = FastAPI(
     title=settings.api_title,
@@ -25,13 +25,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include routers
-app.include_router(teams.router, prefix="/api/v1/teams", tags=["Teams"])
-app.include_router(people.router, prefix="/api/v1/people", tags=["People"])
-app.include_router(resources.router, prefix="/api/v1/resources", tags=["Resources"])
+# Include a2rp routers
+app.include_router(projects.router, prefix="/api/v1/projects", tags=["Projects"])
 app.include_router(tasks.router, prefix="/api/v1/tasks", tags=["Tasks"])
-app.include_router(schedules.router, prefix="/api/v1/schedules", tags=["Schedules"])
-app.include_router(reports.router, prefix="/api/v1/reports", tags=["Reports"])
+app.include_router(resources.router, prefix="/api/v1/resources", tags=["Resources"])
+app.include_router(assignments.router, prefix="/api/v1/assignments", tags=["Assignments"])
 
 
 @app.get("/")  # type: ignore[misc]
