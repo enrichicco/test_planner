@@ -1,11 +1,11 @@
 """
-Solution parser for converting PyJobShop solutions back to database models.
+Solution parser for converting PyJobShop solutions back to a2rp database models.
 """
 
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Any, Dict, List, Tuple
 
-from ..models import Assignment, Task
+from ..models.a2rp import Assignment, Task
 
 if TYPE_CHECKING:
     from .problem_builder import ProblemBuilder
@@ -64,7 +64,7 @@ class SolutionParser:
             pass
 
         # Parse task assignments
-        task_dict = {task.id: task for task in tasks}
+        task_dict = {task.task_id: task for task in tasks}
 
         if self.problem_builder.model is None:
             return assignments, metadata
@@ -89,16 +89,19 @@ class SolutionParser:
                         scheduled_start = self.start_date + timedelta(minutes=start_time)
                         scheduled_end = self.start_date + timedelta(minutes=end_time)
 
-                        # Get person ID from machine index
-                        person_id = self.problem_builder.get_person_id(machine_idx)
+                        # Get resource ID from machine index
+                        resource_id = self.problem_builder.get_resource_id(machine_idx)
+
+                        # Calculate work hours from time difference
+                        work_hours = (scheduled_end - scheduled_start).total_seconds() / 3600
 
                         # Create assignment
                         assignment = Assignment(
-                            task_id=task.id,
-                            person_id=person_id,
-                            scheduled_start=scheduled_start,
-                            scheduled_end=scheduled_end,
-                            allocated_capacity=1.0,
+                            task_id=task.task_id,
+                            resource_id=resource_id,
+                            work=work_hours,
+                            start_date=scheduled_start,
+                            end_date=scheduled_end,
                         )
                         assignments.append(assignment)
 

@@ -1,5 +1,5 @@
 """
-Main scheduling engine using PyJobShop.
+Main scheduling engine using PyJobShop for a2rp schema.
 """
 
 import time
@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pyjobshop import solve
 
-from ..models import Assignment, Person, Resource, Schedule, ScheduleStatus, Task
+from ..models.a2rp import Assignment, Resource, Task
 from .problem_builder import ProblemBuilder
 from .solution_parser import SolutionParser
 
@@ -36,38 +36,39 @@ class SchedulerEngine:
     def create_schedule(
         self,
         tasks: List[Task],
-        people: List[Person],
         resources: List[Resource],
+        assignments: List[Assignment],
         start_date: datetime,
         end_date: datetime,
-        schedule_name: str = "New Schedule",
-    ) -> Tuple[Schedule, List[Assignment], List[Dict[str, Any]]]:
+    ) -> Tuple[List[Assignment], Dict[str, Any], List[Dict[str, Any]]]:
         """
-        Create a schedule for the given tasks, people, and resources.
+        Create a schedule for the given tasks and resources.
 
         Args:
             tasks: List of tasks to schedule
-            people: List of available people
-            resources: List of available resources
+            resources: List of available resources (people, machines, etc.)
+            assignments: Existing assignments for resources to tasks
             start_date: Start date for the schedule
             end_date: End date for the schedule
-            schedule_name: Name for the schedule
 
         Returns:
-            Tuple of (Schedule, Assignments, Exceptions)
+            Tuple of (Assignments, Metadata, Exceptions)
         """
         exceptions: List[Dict[str, Any]] = []
+        metadata: Dict[str, Any] = {}
 
         # Validate inputs
         if not tasks:
             raise ValueError("No tasks provided for scheduling")
-        if not people:
-            raise ValueError("No people available for scheduling")
+        if not resources:
+            raise ValueError("No resources available for scheduling")
 
         # Build the problem
         problem_builder = ProblemBuilder()
         try:
-            model = problem_builder.build_problem(tasks, people, resources, start_date)
+            model = problem_builder.build_problem(
+                tasks, resources, assignments, start_date
+            )
         except Exception as e:
             exceptions.append(
                 {
@@ -76,14 +77,7 @@ class SchedulerEngine:
                     "message": f"Failed to build problem: {str(e)}",
                 }
             )
-            # Return empty schedule
-            schedule = Schedule(
-                name=schedule_name,
-                start_date=start_date,
-                end_date=end_date,
-                status=ScheduleStatus.DRAFT,
-            )
-            return schedule, [], exceptions
+            return [], metadata, exceptions
 
         # Solve the problem
         solve_start = time.time()
@@ -109,48 +103,45 @@ class SchedulerEngine:
 
         # Parse solution
         solution_parser = SolutionParser(problem_builder, start_date)
-        assignments, metadata = solution_parser.parse_solution(solution, tasks)
+        new_assignments, solution_metadata = solution_parser.parse_solution(
+            solution, tasks
+        )
+
+        # Update metadata
+        metadata.update(solution_metadata)
+        metadata["solver_used"] = self.solver
+        metadata["solve_time"] = solve_time
 
         # Check for tasks that couldn't be scheduled
-        scheduled_task_ids = {a.task_id for a in assignments}
+        scheduled_task_ids = {a.task_id for a in new_assignments}
         for task in tasks:
-            if task.id not in scheduled_task_ids:
+            if task.task_id not in scheduled_task_ids:
                 exceptions.append(
                     {
                         "type": "CONSTRAINT_VIOLATION",
                         "severity": "warning",
-                        "message": f"Task '{task.name}' (ID: {task.id}) could not be scheduled",
-                        "task_id": task.id,
+                        "message": f"Task '{task.name}' (ID: {task.task_id}) could not be scheduled",
+                        "task_id": task.task_id,
                     }
                 )
 
-        # Check for deadline violations
-        for assignment in assignments:
-            task_obj: Optional[Task] = next((t for t in tasks if t.id == assignment.task_id), None)
-            if task_obj and task_obj.deadline and assignment.scheduled_end:
-                if assignment.scheduled_end > task_obj.deadline:
+        # Check for deadline violations (if task has end_date)
+        for assignment in new_assignments:
+            task_obj: Optional[Task] = next(
+                (t for t in tasks if t.task_id == assignment.task_id), None
+            )
+            if task_obj and task_obj.end_date and assignment.end_date:
+                if assignment.end_date > task_obj.end_date:
                     exceptions.append(
                         {
                             "type": "DEADLINE_MISS",
                             "severity": "error",
                             "message": f"Task '{task_obj.name}' scheduled to end after deadline",
-                            "task_id": task_obj.id,
+                            "task_id": task_obj.task_id,
                         }
                     )
 
-        # Create schedule object
-        schedule = Schedule(
-            name=schedule_name,
-            start_date=start_date,
-            end_date=end_date,
-            status=ScheduleStatus.ACTIVE if assignments else ScheduleStatus.DRAFT,
-            objective_value=metadata.get("objective_value"),
-            solver_used=self.solver,
-            solve_time=solve_time,
-            optimization_metadata=metadata,
-        )
-
-        return schedule, assignments, exceptions
+        return new_assignments, metadata, exceptions
 
     def validate_schedule(
         self,
@@ -169,31 +160,31 @@ class SchedulerEngine:
         """
         exceptions: List[Dict[str, Any]] = []
 
-        # Check for person overallocation
-        person_schedules: Dict[int, List[Assignment]] = {}
+        # Check for resource overallocation
+        resource_schedules: Dict[int, List[Assignment]] = {}
         for assignment in assignments:
-            if assignment.person_id:
-                if assignment.person_id not in person_schedules:
-                    person_schedules[assignment.person_id] = []
-                person_schedules[assignment.person_id].append(assignment)
+            if assignment.resource_id:
+                if assignment.resource_id not in resource_schedules:
+                    resource_schedules[assignment.resource_id] = []
+                resource_schedules[assignment.resource_id].append(assignment)
 
-        # Check for overlapping assignments per person
-        for person_id, person_assignments in person_schedules.items():
-            for i, a1 in enumerate(person_assignments):
-                for a2 in person_assignments[i + 1 :]:
-                    if a1.scheduled_start and a1.scheduled_end:
-                        if a2.scheduled_start and a2.scheduled_end:
+        # Check for overlapping assignments per resource
+        for resource_id, resource_assignments in resource_schedules.items():
+            for i, a1 in enumerate(resource_assignments):
+                for a2 in resource_assignments[i + 1 :]:
+                    if a1.start_date and a1.end_date:
+                        if a2.start_date and a2.end_date:
                             # Check for overlap
                             if not (
-                                a1.scheduled_end <= a2.scheduled_start
-                                or a2.scheduled_end <= a1.scheduled_start
+                                a1.end_date <= a2.start_date
+                                or a2.end_date <= a1.start_date
                             ):
                                 exceptions.append(
                                     {
                                         "type": "RESOURCE_CONFLICT",
                                         "severity": "error",
-                                        "message": f"Person {person_id} has overlapping tasks",
-                                        "person_id": person_id,
+                                        "message": f"Resource {resource_id} has overlapping tasks",
+                                        "resource_id": resource_id,
                                     }
                                 )
                                 break

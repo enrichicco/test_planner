@@ -1,5 +1,5 @@
 """
-Problem builder for converting database models to PyJobShop problems.
+Problem builder for converting a2rp database models to PyJobShop problems.
 """
 
 from datetime import datetime
@@ -8,32 +8,31 @@ from typing import Dict, List, Optional
 from pyjobshop import MAX_VALUE, Model
 from pyjobshop import Task as PJTask
 
-from ..models import Person, Resource, Task
+from ..models.a2rp import Assignment, Resource, Task
 
 
 class ProblemBuilder:
-    """Builds PyJobShop problem instances from database models."""
+    """Builds PyJobShop problem instances from a2rp database models."""
 
     def __init__(self) -> None:
         self.model: Optional[Model] = None
         self.task_mapping: Dict[int, PJTask] = {}  # DB task id -> PyJobShop task
-        self.person_mapping: Dict[int, int] = {}  # DB person id -> PyJobShop machine index
-        self.resource_mapping: Dict[int, int] = {}  # DB resource id -> PyJobShop resource index
+        self.resource_mapping: Dict[int, int] = {}  # DB resource id -> PyJobShop machine/resource index
 
     def build_problem(
         self,
         tasks: List[Task],
-        people: List[Person],
         resources: List[Resource],
+        assignments: List[Assignment],
         start_date: datetime,
     ) -> Model:
         """
-        Build a PyJobShop model from database entities.
+        Build a PyJobShop model from a2rp database entities.
 
         Args:
             tasks: List of tasks to schedule
-            people: List of available people
-            resources: List of available resources
+            resources: List of available resources (people, machines, etc.)
+            assignments: List of assignments linking resources to tasks
             start_date: Start date for the schedule
 
         Returns:
@@ -41,53 +40,47 @@ class ProblemBuilder:
         """
         self.model = Model()
 
-        # Create machines (people)
-        for idx, person in enumerate(people):
-            if person.is_available:
-                self.model.add_machine(
-                    name=f"person_{person.id}",
-                )
-                self.person_mapping[person.id] = idx
-
-        # Create resources
+        # Create machines (resources that can perform work)
+        # In a2rp, resources are generic - they can be people, equipment, etc.
         for idx, resource in enumerate(resources):
-            if resource.is_available:
-                if resource.is_renewable:
-                    self.model.add_renewable(capacity=int(resource.capacity))
-                else:
-                    self.model.add_non_renewable(capacity=int(resource.capacity))
-                self.resource_mapping[resource.id] = idx
+            self.model.add_machine(
+                name=f"resource_{resource.resource_id}",
+            )
+            self.resource_mapping[resource.resource_id] = idx
 
         # Create jobs and tasks
-        # Group tasks by team or create individual jobs
+        # Group tasks by project
         job_groups: Dict[Optional[int], List[Task]] = {}
         for task in tasks:
-            team_id = task.team_id
-            if team_id not in job_groups:
-                job_groups[team_id] = []
-            job_groups[team_id].append(task)
+            project_id = task.project_id
+            if project_id not in job_groups:
+                job_groups[project_id] = []
+            job_groups[project_id].append(task)
 
         # Build jobs
-        for team_id, team_tasks in job_groups.items():
-            job_name = f"team_{team_id}" if team_id else "no_team"
+        for project_id, project_tasks in job_groups.items():
+            job_name = f"project_{project_id}" if project_id else "no_project"
 
             # Aggregate dates
             job_release = 0
             job_deadline = MAX_VALUE
             job_due = None
 
-            for task in team_tasks:
-                if task.earliest_start:
-                    release_minutes = int((task.earliest_start - start_date).total_seconds() / 60)
+            for task in project_tasks:
+                if task.start_date:
+                    release_minutes = int(
+                        (task.start_date - start_date).total_seconds() / 60
+                    )
                     job_release = min(job_release or release_minutes, release_minutes)
 
-                if task.deadline:
-                    deadline_minutes = int((task.deadline - start_date).total_seconds() / 60)
-                    job_deadline = max(job_deadline or deadline_minutes, deadline_minutes)
-
-                if task.due_date:
-                    due_minutes = int((task.due_date - start_date).total_seconds() / 60)
-                    job_due = max(job_due or due_minutes, due_minutes)
+                if task.end_date:
+                    deadline_minutes = int(
+                        (task.end_date - start_date).total_seconds() / 60
+                    )
+                    job_deadline = max(
+                        job_deadline if job_deadline != MAX_VALUE else deadline_minutes,
+                        deadline_minutes,
+                    )
 
             job = self.model.add_job(
                 name=job_name,
@@ -96,37 +89,37 @@ class ProblemBuilder:
                 due_date=job_due,
             )
 
-            for task in team_tasks:
-                duration = int(task.duration * 60)
+            for task in project_tasks:
+                # Duration in minutes (work is in hours)
+                duration = int((task.work or 8.0) * 60)
 
                 earliest_start = (
-                    int((task.earliest_start - start_date).total_seconds() / 60)
-                    if task.earliest_start
+                    int((task.start_date - start_date).total_seconds() / 60)
+                    if task.start_date
                     else 0
                 )
                 latest_end = (
-                    int((task.deadline - start_date).total_seconds() / 60)
-                    if task.deadline
+                    int((task.end_date - start_date).total_seconds() / 60)
+                    if task.end_date
                     else MAX_VALUE
                 )
 
                 pj_task = self.model.add_task(
                     job=job,
                     earliest_start=earliest_start,
-                    latest_end=earliest_start + duration if latest_end == MAX_VALUE else latest_end,
-                    name=f"task_{task.id}",
+                    latest_end=(
+                        earliest_start + duration
+                        if latest_end == MAX_VALUE
+                        else latest_end
+                    ),
+                    name=f"task_{task.task_id}",
                 )
 
-                self.task_mapping[task.id] = pj_task
+                self.task_mapping[task.task_id] = pj_task
 
-        # Add precedence constraints
-        for task in tasks:
-            if task.predecessor_id and task.id in self.task_mapping:
-                if task.predecessor_id in self.task_mapping:
-                    pred_task = self.task_mapping[task.predecessor_id]
-                    curr_task = self.task_mapping[task.id]
-                    # Add precedence constraint: predecessor must finish before current starts
-                    self.model.add_consecutive(pred_task, curr_task)
+        # Add precedence constraints (if your a2rp schema supports task dependencies)
+        # Note: The current a2rp schema doesn't have predecessor_id,
+        # but you could add it via task_link table if needed
 
         return self.model
 
@@ -137,9 +130,9 @@ class ProblemBuilder:
                 return db_id
         return None
 
-    def get_person_id(self, machine_idx: int) -> Optional[int]:
-        """Get database person ID from PyJobShop machine index."""
-        for db_id, pj_idx in self.person_mapping.items():
+    def get_resource_id(self, machine_idx: int) -> Optional[int]:
+        """Get database resource ID from PyJobShop machine index."""
+        for db_id, pj_idx in self.resource_mapping.items():
             if pj_idx == machine_idx:
                 return db_id
         return None

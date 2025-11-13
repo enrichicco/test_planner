@@ -1,5 +1,5 @@
 """
-Tests for service layer.
+Tests for a2rp service layer.
 """
 
 from datetime import datetime, timedelta
@@ -9,108 +9,192 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
-from src.task_planner.models import Base, TaskPriority, TaskStatus
-from src.task_planner.services import (
-    PersonService,
+from src.task_planner.models.a2rp.base import A2RPBase
+from src.task_planner.services.a2rp import (
+    AssignmentService,
+    ProjectService,
     ResourceService,
-    SchedulingService,
     TaskService,
-    TeamService,
 )
 
 
 @pytest.fixture  # type: ignore[misc]
 def db_session() -> Generator[Session, Any, None]:
-    """Create a test database session."""
+    """Create a test database session for a2rp schema."""
     engine = create_engine("sqlite:///:memory:")
-    Base.metadata.create_all(engine)
-    Session = sessionmaker(bind=engine)
-    session = Session()
+    A2RPBase.metadata.create_all(engine)
+    SessionLocal = sessionmaker(bind=engine)
+    session = SessionLocal()
     yield session
     session.close()
 
 
-def test_team_service_create(db_session: Session) -> None:
-    """Test creating a team."""
-    service = TeamService(db_session)
-    team = service.create_team(name="Test Team", description="A test team")
-    assert team.id is not None
-    assert team.name == "Test Team"
-    assert team.is_active is True
-
-
-def test_person_service_create(db_session: Session) -> None:
-    """Test creating a person."""
-    # First create a team
-    team_service = TeamService(db_session)
-    team = team_service.create_team(name="Test Team")
-
-    # Create person
-    person_service = PersonService(db_session)
-    person = person_service.create_person(
-        name="John Doe",
-        email="john@example.com",
-        role="Developer",
-        team_id=team.id,
-        skills={"python": 5},
+def test_project_service_create(db_session: Session) -> None:
+    """Test creating a project."""
+    service = ProjectService(db_session)
+    project = service.create_project(
+        name="Test Project",
+        description="A test project",
+        project_type_id=1,
+        project_status_id=1,
+        start_date=datetime.now(),
+        end_date=datetime.now() + timedelta(days=30),
     )
-    assert person.id is not None
-    assert person.name == "John Doe"
-    assert person.team_id == team.id
+    assert project.project_id is not None
+    assert project.name == "Test Project"
+    assert project.description == "A test project"
+
+
+def test_project_service_get(db_session: Session) -> None:
+    """Test getting a project."""
+    service = ProjectService(db_session)
+    project = service.create_project(
+        name="Test Project",
+        project_type_id=1,
+        project_status_id=1,
+    )
+    retrieved = service.get_project(project.project_id)
+    assert retrieved is not None
+    assert retrieved.project_id == project.project_id
+    assert retrieved.name == "Test Project"
 
 
 def test_resource_service_create(db_session: Session) -> None:
     """Test creating a resource."""
     service = ResourceService(db_session)
     resource = service.create_resource(
-        name="Conference Room A",
-        resource_type="room",
-        capacity=10.0,
+        name="Alice Johnson",
+        email="alice@example.com",
+        resource_type_id=1,
+        resource_status_id=1,
     )
-    assert resource.id is not None
-    assert resource.name == "Conference Room A"
-    assert resource.capacity == 10.0
+    assert resource.resource_id is not None
+    assert resource.name == "Alice Johnson"
+    assert resource.email == "alice@example.com"
+
+
+def test_resource_service_list(db_session: Session) -> None:
+    """Test listing resources."""
+    service = ResourceService(db_session)
+    service.create_resource(
+        name="Alice", email="alice@example.com", resource_type_id=1, resource_status_id=1
+    )
+    service.create_resource(
+        name="Bob", email="bob@example.com", resource_type_id=1, resource_status_id=1
+    )
+    resources = service.list_resources(limit=10)
+    assert len(resources) == 2
 
 
 def test_task_service_create(db_session: Session) -> None:
     """Test creating a task."""
-    # Create team
-    team_service = TeamService(db_session)
-    team = team_service.create_team(name="Test Team")
+    # First create a project
+    project_service = ProjectService(db_session)
+    project = project_service.create_project(
+        name="Test Project", project_type_id=1, project_status_id=1
+    )
 
     # Create task
     task_service = TaskService(db_session)
     task = task_service.create_task(
         name="Test Task",
-        duration=8.0,
         description="A test task",
-        team_id=team.id,
-        priority=TaskPriority.HIGH,
+        project_id=project.project_id,
+        task_status_id=1,
+        work=16.0,
+        start_date=datetime.now(),
+        end_date=datetime.now() + timedelta(days=2),
     )
-    assert task.id is not None
+    assert task.task_id is not None
     assert task.name == "Test Task"
-    assert task.duration == 8.0
-    assert task.status == TaskStatus.PENDING
+    assert task.work == 16.0
+    assert task.project_id == project.project_id
 
 
-def test_scheduling_service_create_schedule(db_session: Session) -> None:
-    """Test creating a schedule."""
-    # Setup: Create team, person, and task
-    team_service = TeamService(db_session)
-    team = team_service.create_team(name="Test Team")
-
-    # Create schedule
-    scheduling_service = SchedulingService(db_session)
-    start_date = datetime.now()
-    end_date = start_date + timedelta(days=7)
-
-    schedule = scheduling_service.create_schedule(
-        name="Test Schedule",
-        start_date=start_date,
-        end_date=end_date,
-        team_id=team.id,
+def test_task_service_list_by_project(db_session: Session) -> None:
+    """Test listing tasks by project."""
+    # Create project
+    project_service = ProjectService(db_session)
+    project = project_service.create_project(
+        name="Test Project", project_type_id=1, project_status_id=1
     )
 
-    assert schedule.id is not None
-    assert schedule.name == "Test Schedule"
-    # Note: Actual scheduling may fail without PyJobShop properly configured
+    # Create tasks
+    task_service = TaskService(db_session)
+    task_service.create_task(
+        name="Task 1", project_id=project.project_id, task_status_id=1
+    )
+    task_service.create_task(
+        name="Task 2", project_id=project.project_id, task_status_id=1
+    )
+
+    tasks = task_service.list_tasks(project_id=project.project_id)
+    assert len(tasks) == 2
+
+
+def test_assignment_service_create(db_session: Session) -> None:
+    """Test creating an assignment."""
+    # Create project
+    project_service = ProjectService(db_session)
+    project = project_service.create_project(
+        name="Test Project", project_type_id=1, project_status_id=1
+    )
+
+    # Create task
+    task_service = TaskService(db_session)
+    task = task_service.create_task(
+        name="Test Task", project_id=project.project_id, task_status_id=1
+    )
+
+    # Create resource
+    resource_service = ResourceService(db_session)
+    resource = resource_service.create_resource(
+        name="Alice", resource_type_id=1, resource_status_id=1
+    )
+
+    # Create assignment
+    assignment_service = AssignmentService(db_session)
+    assignment = assignment_service.create_assignment(
+        task_id=task.task_id,
+        resource_id=resource.resource_id,
+        work=16.0,
+        start_date=datetime.now(),
+        end_date=datetime.now() + timedelta(days=2),
+    )
+
+    assert assignment.assignment_id is not None
+    assert assignment.task_id == task.task_id
+    assert assignment.resource_id == resource.resource_id
+    assert assignment.work == 16.0
+
+
+def test_assignment_service_update(db_session: Session) -> None:
+    """Test updating an assignment with actual work."""
+    # Setup
+    project_service = ProjectService(db_session)
+    project = project_service.create_project(
+        name="Test Project", project_type_id=1, project_status_id=1
+    )
+
+    task_service = TaskService(db_session)
+    task = task_service.create_task(
+        name="Test Task", project_id=project.project_id, task_status_id=1
+    )
+
+    resource_service = ResourceService(db_session)
+    resource = resource_service.create_resource(
+        name="Alice", resource_type_id=1, resource_status_id=1
+    )
+
+    assignment_service = AssignmentService(db_session)
+    assignment = assignment_service.create_assignment(
+        task_id=task.task_id, resource_id=resource.resource_id, work=16.0
+    )
+
+    # Update with actual work
+    updated = assignment_service.update_assignment(
+        assignment_id=assignment.assignment_id, actual_work=18.0
+    )
+
+    assert updated is not None
+    assert updated.actual_work == 18.0

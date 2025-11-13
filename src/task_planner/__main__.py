@@ -15,7 +15,7 @@ def main() -> None:
         "task_planner.api.main:app",
         host=settings.api_host,
         port=settings.api_port,
-        reload=settings.api_reload,
+        reload=settings.debug,
     )
 
 
