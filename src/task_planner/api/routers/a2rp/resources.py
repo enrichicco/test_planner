@@ -19,7 +19,7 @@ router = APIRouter()
     response_model=ResourceResponse,
     status_code=201,
     responses={404: {"description": "Not Found"}, 500: {"description": "Internal Server Error"}},
-)  # type: ignore[misc]
+)
 def create_resource(resource: ResourceCreate, db: Session = Depends(get_db)) -> ResourceResponse:
     """Create a new resource."""
     try:
@@ -42,7 +42,7 @@ def create_resource(resource: ResourceCreate, db: Session = Depends(get_db)) -> 
     "/{resource_id}",
     response_model=ResourceResponse,
     responses={404: {"description": "Not Found"}, 500: {"description": "Internal Server Error"}},
-)  # type: ignore[misc]
+)
 def get_resource(resource_id: int, db: Session = Depends(get_db)) -> ResourceResponse:
     """Get a resource by ID."""
     try:
@@ -61,7 +61,7 @@ def get_resource(resource_id: int, db: Session = Depends(get_db)) -> ResourceRes
     "/",
     response_model=List[ResourceResponse],
     responses={500: {"description": "Internal Server Error"}},
-)  # type: ignore[misc]
+)
 def list_resources(
     resource_type_id: Optional[int] = None,
     resource_status_id: Optional[int] = None,
@@ -86,7 +86,7 @@ def list_resources(
     "/{resource_id}",
     response_model=ResourceResponse,
     responses={404: {"description": "Not Found"}, 500: {"description": "Internal Server Error"}},
-)  # type: ignore[misc]
+)
 def update_resource(
     resource_id: int, resource: ResourceUpdate, db: Session = Depends(get_db)
 ) -> ResourceResponse:
@@ -112,7 +112,7 @@ def update_resource(
     "/{resource_id}",
     status_code=204,
     responses={404: {"description": "Not Found"}, 500: {"description": "Internal Server Error"}},
-)  # type: ignore[misc]
+)
 def delete_resource(resource_id: int, db: Session = Depends(get_db)) -> None:
     """Delete a resource."""
     try:

@@ -18,7 +18,7 @@ from src.task_planner.services.a2rp import (
 )
 
 
-@pytest.fixture  # type: ignore[misc]
+@pytest.fixture
 def db_session() -> Generator[Session, Any, None]:
     """Create a test database session for a2rp schema."""
     engine = create_engine("sqlite:///:memory:")

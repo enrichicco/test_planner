@@ -22,7 +22,7 @@ router = APIRouter()
         404: {"description": "Not Found"},
         500: {"description": "Internal Server Error"},
     },
-)  # type: ignore[misc]
+)
 def create_assignment(
     assignment: AssignmentCreate, db: Session = Depends(get_db)
 ) -> AssignmentResponse:
@@ -51,7 +51,7 @@ def create_assignment(
         404: {"description": "Not Found"},
         500: {"description": "Internal Server Error"},
     },
-)  # type: ignore[misc]
+)
 def get_assignment(assignment_id: int, db: Session = Depends(get_db)) -> AssignmentResponse:
     """Get an assignment by ID."""
     try:
@@ -72,7 +72,7 @@ def get_assignment(assignment_id: int, db: Session = Depends(get_db)) -> Assignm
     responses={
         500: {"description": "Internal Server Error"},
     },
-)  # type: ignore[misc]
+)
 def list_assignments(
     task_id: Optional[int] = None,
     resource_id: Optional[int] = None,
@@ -98,7 +98,7 @@ def list_assignments(
         404: {"description": "Not Found"},
         500: {"description": "Internal Server Error"},
     },
-)  # type: ignore[misc]
+)
 def update_assignment(
     assignment_id: int, assignment: AssignmentUpdate, db: Session = Depends(get_db)
 ) -> AssignmentResponse:
@@ -130,7 +130,7 @@ def update_assignment(
         404: {"description": "Not Found"},
         500: {"description": "Internal Server Error"},
     },
-)  # type: ignore[misc]
+)
 def delete_assignment(assignment_id: int, db: Session = Depends(get_db)) -> None:
     """Delete an assignment."""
     try:

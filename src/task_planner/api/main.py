@@ -33,7 +33,7 @@ app.include_router(assignments.router, prefix="/api/v1/assignments", tags=["Assi
 app.include_router(reports.router, prefix="/api/v1/reports", tags=["Reports"])
 
 
-@app.get("/")  # type: ignore[misc]
+@app.get("/")
 async def root() -> Dict[str, str]:
     """Root endpoint."""
     return {
@@ -43,7 +43,7 @@ async def root() -> Dict[str, str]:
     }
 
 
-@app.get("/health")  # type: ignore[misc]
+@app.get("/health")
 async def health() -> Dict[str, str]:
     """Health check endpoint."""
     return {"status": "healthy"}

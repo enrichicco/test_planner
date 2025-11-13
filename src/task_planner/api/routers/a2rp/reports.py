@@ -2,7 +2,7 @@
 Reports API endpoints for a2rp schema.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Annotated, Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
@@ -17,7 +17,7 @@ router = APIRouter()
     "/projects/summary",
     response_model=Dict[str, Any],
     responses={500: {"description": "Internal Server Error"}},
-)  # type: ignore[misc]
+)
 def get_project_summary(
     project_status_id: Optional[int] = Query(None, description="Filter by project status ID"),
     db: Session = Depends(get_db),
@@ -40,7 +40,7 @@ def get_project_summary(
     "/tasks/summary",
     response_model=Dict[str, Any],
     responses={500: {"description": "Internal Server Error"}},
-)  # type: ignore[misc]
+)
 def get_task_summary(
     project_id: Optional[int] = Query(None, description="Filter by project ID"),
     task_status_id: Optional[int] = Query(None, description="Filter by task status ID"),
@@ -64,7 +64,7 @@ def get_task_summary(
     "/resources/workload",
     response_model=List[Dict[str, Any]],
     responses={500: {"description": "Internal Server Error"}},
-)  # type: ignore[misc]
+)
 def get_resource_workload(
     resource_type_id: Optional[int] = Query(None, description="Filter by resource type ID"),
     db: Session = Depends(get_db),
@@ -87,11 +87,11 @@ def get_resource_workload(
     "/assignments",
     response_model=List[Dict[str, Any]],
     responses={500: {"description": "Internal Server Error"}},
-)  # type: ignore[misc]
+)
 def get_assignment_report(
-    project_id: Optional[int] = Query(None, description="Filter by project ID"),
-    resource_id: Optional[int] = Query(None, description="Filter by resource ID"),
-    include_completed: bool = Query(True, description="Include completed assignments"),
+    project_id: Annotated[Optional[int], Query(None, description="Filter by project ID")],
+    resource_id: Annotated[Optional[int], Query(None, description="Filter by resource ID")],
+    include_completed: Annotated[bool, Query(True, description="Include completed assignments")],
     db: Session = Depends(get_db),
 ) -> List[Dict[str, Any]]:
     """
@@ -116,7 +116,7 @@ def get_assignment_report(
     "/projects/timeline",
     response_model=List[Dict[str, Any]],
     responses={500: {"description": "Internal Server Error"}},
-)  # type: ignore[misc]
+)
 def get_project_timeline(
     project_id: Optional[int] = Query(None, description="Filter by specific project ID"),
     db: Session = Depends(get_db),

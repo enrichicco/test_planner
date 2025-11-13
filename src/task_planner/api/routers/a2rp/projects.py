@@ -19,7 +19,7 @@ router = APIRouter()
     response_model=ProjectResponse,
     status_code=201,
     responses={404: {"description": "Not Found"}, 500: {"description": "Internal Server Error"}},
-)  # type: ignore[misc]
+)
 def create_project(project: ProjectCreate, db: Session = Depends(get_db)) -> ProjectResponse:
     """Create a new project."""
     try:
@@ -44,7 +44,7 @@ def create_project(project: ProjectCreate, db: Session = Depends(get_db)) -> Pro
     "/{project_id}",
     response_model=ProjectResponse,
     responses={404: {"description": "Not Found"}, 500: {"description": "Internal Server Error"}},
-)  # type: ignore[misc]
+)
 def get_project(project_id: int, db: Session = Depends(get_db)) -> ProjectResponse:
     """Get a project by ID."""
     try:
@@ -63,7 +63,7 @@ def get_project(project_id: int, db: Session = Depends(get_db)) -> ProjectRespon
     "/",
     response_model=List[ProjectResponse],
     responses={500: {"description": "Internal Server Error"}},
-)  # type: ignore[misc]
+)
 def list_projects(
     project_status_id: Optional[int] = None,
     project_type_id: Optional[int] = None,
@@ -86,7 +86,7 @@ def list_projects(
     "/{project_id}",
     response_model=ProjectResponse,
     responses={404: {"description": "Not Found"}, 500: {"description": "Internal Server Error"}},
-)  # type: ignore[misc]
+)
 def update_project(
     project_id: int, project: ProjectUpdate, db: Session = Depends(get_db)
 ) -> ProjectResponse:
@@ -114,7 +114,7 @@ def update_project(
     "/{project_id}",
     status_code=204,
     responses={404: {"description": "Not Found"}, 500: {"description": "Internal Server Error"}},
-)  # type: ignore[misc]
+)
 def delete_project(project_id: int, db: Session = Depends(get_db)) -> None:
     """Delete a project."""
     try:

@@ -19,7 +19,7 @@ router = APIRouter()
     response_model=TaskResponse,
     status_code=201,
     responses={404: {"description": "Not Found"}, 500: {"description": "Internal Server Error"}},
-)  # type: ignore[misc]
+)
 def create_task(task: TaskCreate, db: Session = Depends(get_db)) -> TaskResponse:
     """Create a new task."""
     try:
@@ -45,7 +45,7 @@ def create_task(task: TaskCreate, db: Session = Depends(get_db)) -> TaskResponse
     "/{task_id}",
     response_model=TaskResponse,
     responses={404: {"description": "Not Found"}, 500: {"description": "Internal Server Error"}},
-)  # type: ignore[misc]
+)
 def get_task(task_id: int, db: Session = Depends(get_db)) -> TaskResponse:
     """Get a task by ID."""
     try:
@@ -64,7 +64,7 @@ def get_task(task_id: int, db: Session = Depends(get_db)) -> TaskResponse:
     "/",
     response_model=List[TaskResponse],
     responses={500: {"description": "Internal Server Error"}},
-)  # type: ignore[misc]
+)
 def list_tasks(
     project_id: Optional[int] = None,
     task_status_id: Optional[int] = None,
@@ -87,7 +87,7 @@ def list_tasks(
     "/{task_id}",
     response_model=TaskResponse,
     responses={404: {"description": "Not Found"}, 500: {"description": "Internal Server Error"}},
-)  # type: ignore[misc]
+)
 def update_task(task_id: int, task: TaskUpdate, db: Session = Depends(get_db)) -> TaskResponse:
     """Update a task."""
     try:
@@ -114,7 +114,7 @@ def update_task(task_id: int, task: TaskUpdate, db: Session = Depends(get_db)) -
     "/{task_id}",
     status_code=204,
     responses={404: {"description": "Not Found"}, 500: {"description": "Internal Server Error"}},
-)  # type: ignore[misc]
+)
 def delete_task(task_id: int, db: Session = Depends(get_db)) -> None:
     """Delete a task."""
     try:
