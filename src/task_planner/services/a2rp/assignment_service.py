@@ -3,12 +3,12 @@ Service for managing assignments in the a2rp schema.
 """
 
 from datetime import datetime
+from decimal import Decimal
 from typing import List, Optional
 
 from sqlalchemy.orm import Session
 
 from ...models.a2rp import Assignment, Resource, Task
-from ..exceptions import ValidationException
 
 
 class AssignmentService:
@@ -31,12 +31,12 @@ class AssignmentService:
         # Validate task exists
         task = self.db.query(Task).filter(Task.task_id == task_id).first()
         if not task:
-            raise ValidationException(f"Task {task_id} not found")
+            raise LookupError(f"Task {task_id} not found")
 
         # Validate resource exists
         resource = self.db.query(Resource).filter(Resource.resource_id == resource_id).first()
         if not resource:
-            raise ValidationException(f"Resource {resource_id} not found")
+            raise LookupError(f"Resource {resource_id} not found")
 
         assignment = Assignment(
             task_id=task_id,
@@ -52,9 +52,7 @@ class AssignmentService:
 
     def get_assignment(self, assignment_id: int) -> Optional[Assignment]:
         """Get an assignment by ID."""
-        return (
-            self.db.query(Assignment).filter(Assignment.assignment_id == assignment_id).first()
-        )
+        return self.db.query(Assignment).filter(Assignment.assignment_id == assignment_id).first()
 
     def list_assignments(
         self,
@@ -87,13 +85,13 @@ class AssignmentService:
             return None
 
         if work is not None:
-            assignment.work = work
+            assignment.work = Decimal(work)
         if start_date is not None:
             assignment.start_date = start_date
         if end_date is not None:
             assignment.end_date = end_date
         if actual_work is not None:
-            assignment.actual_work = actual_work
+            assignment.actual_work = Decimal(actual_work)
 
         self.db.commit()
         self.db.refresh(assignment)

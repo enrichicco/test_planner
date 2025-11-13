@@ -31,7 +31,9 @@ class ProjectService:
         """Create a new project."""
         # Validate project type exists
         project_type = (
-            self.db.query(ProjectType).filter(ProjectType.project_type_id == project_type_id).first()
+            self.db.query(ProjectType)
+            .filter(ProjectType.project_type_id == project_type_id)
+            .first()
         )
         if not project_type:
             raise ValidationException(f"ProjectType {project_type_id} not found")

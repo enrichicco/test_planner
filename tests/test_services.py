@@ -70,7 +70,7 @@ def test_resource_service_create(db_session: Session) -> None:
     )
     assert resource.resource_id is not None
     assert resource.name == "Alice Johnson"
-    assert resource.email == "alice@example.com"
+    assert resource.mail_address == "alice@example.com"
 
 
 def test_resource_service_list(db_session: Session) -> None:
@@ -121,12 +121,8 @@ def test_task_service_list_by_project(db_session: Session) -> None:
 
     # Create tasks
     task_service = TaskService(db_session)
-    task_service.create_task(
-        name="Task 1", project_id=project.project_id, task_status_id=1
-    )
-    task_service.create_task(
-        name="Task 2", project_id=project.project_id, task_status_id=1
-    )
+    task_service.create_task(name="Task 1", project_id=project.project_id, task_status_id=1)
+    task_service.create_task(name="Task 2", project_id=project.project_id, task_status_id=1)
 
     tasks = task_service.list_tasks(project_id=project.project_id)
     assert len(tasks) == 2

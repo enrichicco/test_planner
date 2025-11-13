@@ -17,7 +17,9 @@ class ProblemBuilder:
     def __init__(self) -> None:
         self.model: Optional[Model] = None
         self.task_mapping: Dict[int, PJTask] = {}  # DB task id -> PyJobShop task
-        self.resource_mapping: Dict[int, int] = {}  # DB resource id -> PyJobShop machine/resource index
+        self.resource_mapping: Dict[
+            int, int
+        ] = {}  # DB resource id -> PyJobShop machine/resource index
 
     def build_problem(
         self,
@@ -68,15 +70,11 @@ class ProblemBuilder:
 
             for task in project_tasks:
                 if task.start_date:
-                    release_minutes = int(
-                        (task.start_date - start_date).total_seconds() / 60
-                    )
+                    release_minutes = int((task.start_date - start_date).total_seconds() / 60)
                     job_release = min(job_release or release_minutes, release_minutes)
 
                 if task.end_date:
-                    deadline_minutes = int(
-                        (task.end_date - start_date).total_seconds() / 60
-                    )
+                    deadline_minutes = int((task.end_date - start_date).total_seconds() / 60)
                     job_deadline = max(
                         job_deadline if job_deadline != MAX_VALUE else deadline_minutes,
                         deadline_minutes,
@@ -108,9 +106,7 @@ class ProblemBuilder:
                     job=job,
                     earliest_start=earliest_start,
                     latest_end=(
-                        earliest_start + duration
-                        if latest_end == MAX_VALUE
-                        else latest_end
+                        earliest_start + duration if latest_end == MAX_VALUE else latest_end
                     ),
                     name=f"task_{task.task_id}",
                 )

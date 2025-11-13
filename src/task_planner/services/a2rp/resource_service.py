@@ -7,7 +7,6 @@ from typing import List, Optional
 from sqlalchemy.orm import Session
 
 from ...models.a2rp import Resource, ResourceStatus, ResourceType
-from ..exceptions import ValidationException
 
 
 class ResourceService:
@@ -33,7 +32,7 @@ class ResourceService:
             .first()
         )
         if not resource_type:
-            raise ValidationException(f"ResourceType {resource_type_id} not found")
+            raise LookupError(f"ResourceType {resource_type_id} not found")
 
         # Validate resource status exists
         resource_status = (
@@ -42,7 +41,7 @@ class ResourceService:
             .first()
         )
         if not resource_status:
-            raise ValidationException(f"ResourceStatus {resource_status_id} not found")
+            raise LookupError(f"ResourceStatus {resource_status_id} not found")
 
         resource = Resource(
             name=name,
@@ -91,7 +90,7 @@ class ResourceService:
         if name is not None:
             resource.name = name
         if email is not None:
-            resource.email = email
+            resource.mail_address = email
         if resource_status_id is not None:
             resource.resource_status_id = resource_status_id
 

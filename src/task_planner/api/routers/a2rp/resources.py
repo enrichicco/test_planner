@@ -15,9 +15,7 @@ router = APIRouter()
 
 
 @router.post("/", response_model=ResourceResponse, status_code=201)  # type: ignore[misc]
-def create_resource(
-    resource: ResourceCreate, db: Session = Depends(get_db)
-) -> ResourceResponse:
+def create_resource(resource: ResourceCreate, db: Session = Depends(get_db)) -> ResourceResponse:
     """Create a new resource."""
     service = ResourceService(db)
     db_resource = service.create_resource(

@@ -142,21 +142,21 @@ def main() -> None:
             start_date=task1.start_date,
             end_date=task1.end_date,
         )
-        assignment2 = assignment_service.create_assignment(
+        assignment_service.create_assignment(
             task_id=task2.task_id,
             resource_id=bob.resource_id,
             work=24.0,
             start_date=task2.start_date,
             end_date=task2.end_date,
         )
-        assignment3 = assignment_service.create_assignment(
+        assignment_service.create_assignment(
             task_id=task3.task_id,
             resource_id=alice.resource_id,
             work=24.0,
             start_date=task3.start_date,
             end_date=task3.end_date,
         )
-        assignment4 = assignment_service.create_assignment(
+        assignment_service.create_assignment(
             task_id=task4.task_id,
             resource_id=charlie.resource_id,
             work=16.0,
@@ -179,16 +179,15 @@ def main() -> None:
 
         # List all assignments for a resource
         print("7. Listing assignments for Alice...")
-        alice_assignments = assignment_service.list_assignments(
-            resource_id=alice.resource_id
-        )
+        alice_assignments = assignment_service.list_assignments(resource_id=alice.resource_id)
         print(f"   ✓ Found {len(alice_assignments)} assignments for {alice.name}")
         print()
 
         # Update task status
         print("8. Updating task status...")
         updated_task = task_service.update_task(
-            task_id=task1.task_id, task_status_id=2  # Assumes "In Progress" exists
+            task_id=task1.task_id,
+            task_status_id=2,  # Assumes "In Progress" exists
         )
         if updated_task:
             print(f"   ✓ Updated status for {updated_task.name}")
@@ -197,7 +196,8 @@ def main() -> None:
         # Update assignment with actual work
         print("9. Recording actual work...")
         updated_assignment = assignment_service.update_assignment(
-            assignment_id=assignment1.assignment_id, actual_work=18.0  # Took 18 hours
+            assignment_id=assignment1.assignment_id,
+            actual_work=18.0,  # Took 18 hours
         )
         if updated_assignment:
             print(

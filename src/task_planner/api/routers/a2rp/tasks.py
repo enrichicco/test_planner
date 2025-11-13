@@ -50,16 +50,12 @@ def list_tasks(
 ) -> List[TaskResponse]:
     """List all tasks."""
     service = TaskService(db)
-    tasks = service.list_tasks(
-        project_id=project_id, task_status_id=task_status_id, limit=limit
-    )
+    tasks = service.list_tasks(project_id=project_id, task_status_id=task_status_id, limit=limit)
     return [TaskResponse.model_validate(t) for t in tasks]
 
 
 @router.patch("/{task_id}", response_model=TaskResponse)  # type: ignore[misc]
-def update_task(
-    task_id: int, task: TaskUpdate, db: Session = Depends(get_db)
-) -> TaskResponse:
+def update_task(task_id: int, task: TaskUpdate, db: Session = Depends(get_db)) -> TaskResponse:
     """Update a task."""
     service = TaskService(db)
     updated_task = service.update_task(

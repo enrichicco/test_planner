@@ -31,9 +31,7 @@ def create_assignment(
 
 
 @router.get("/{assignment_id}", response_model=AssignmentResponse)  # type: ignore[misc]
-def get_assignment(
-    assignment_id: int, db: Session = Depends(get_db)
-) -> AssignmentResponse:
+def get_assignment(assignment_id: int, db: Session = Depends(get_db)) -> AssignmentResponse:
     """Get an assignment by ID."""
     service = AssignmentService(db)
     assignment = service.get_assignment(assignment_id)
@@ -52,9 +50,7 @@ def list_assignments(
 ) -> List[AssignmentResponse]:
     """List all assignments."""
     service = AssignmentService(db)
-    assignments = service.list_assignments(
-        task_id=task_id, resource_id=resource_id, limit=limit
-    )
+    assignments = service.list_assignments(task_id=task_id, resource_id=resource_id, limit=limit)
     return [AssignmentResponse.model_validate(a) for a in assignments]
 
 

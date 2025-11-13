@@ -66,9 +66,7 @@ class SchedulerEngine:
         # Build the problem
         problem_builder = ProblemBuilder()
         try:
-            model = problem_builder.build_problem(
-                tasks, resources, assignments, start_date
-            )
+            model = problem_builder.build_problem(tasks, resources, assignments, start_date)
         except Exception as e:
             exceptions.append(
                 {
@@ -103,9 +101,7 @@ class SchedulerEngine:
 
         # Parse solution
         solution_parser = SolutionParser(problem_builder, start_date)
-        new_assignments, solution_metadata = solution_parser.parse_solution(
-            solution, tasks
-        )
+        new_assignments, solution_metadata = solution_parser.parse_solution(solution, tasks)
 
         # Update metadata
         metadata.update(solution_metadata)
@@ -175,10 +171,7 @@ class SchedulerEngine:
                     if a1.start_date and a1.end_date:
                         if a2.start_date and a2.end_date:
                             # Check for overlap
-                            if not (
-                                a1.end_date <= a2.start_date
-                                or a2.end_date <= a1.start_date
-                            ):
+                            if not (a1.end_date <= a2.start_date or a2.end_date <= a1.start_date):
                                 exceptions.append(
                                     {
                                         "type": "RESOURCE_CONFLICT",

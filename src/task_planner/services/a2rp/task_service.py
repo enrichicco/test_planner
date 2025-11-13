@@ -3,12 +3,12 @@ Service for managing tasks in the a2rp schema.
 """
 
 from datetime import datetime
+from decimal import Decimal
 from typing import List, Optional
 
 from sqlalchemy.orm import Session
 
 from ...models.a2rp import Project, Task, TaskStatus
-from ..exceptions import ValidationException
 
 
 class TaskService:
@@ -33,14 +33,14 @@ class TaskService:
         # Validate project exists
         project = self.db.query(Project).filter(Project.project_id == project_id).first()
         if not project:
-            raise ValidationException(f"Project {project_id} not found")
+            raise LookupError(f"Project {project_id} not found")
 
         # Validate task status exists
         task_status = (
             self.db.query(TaskStatus).filter(TaskStatus.task_status_id == task_status_id).first()
         )
         if not task_status:
-            raise ValidationException(f"TaskStatus {task_status_id} not found")
+            raise LookupError(f"TaskStatus {task_status_id} not found")
 
         task = Task(
             name=name,
@@ -103,7 +103,7 @@ class TaskService:
         if end_date is not None:
             task.end_date = end_date
         if work is not None:
-            task.work = work
+            task.work = Decimal(work)
 
         self.db.commit()
         self.db.refresh(task)
