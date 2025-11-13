@@ -11,7 +11,7 @@ This script demonstrates:
 
 from datetime import datetime, timedelta
 
-from task_planner.models.a2rp.database import SessionLocal, init_a2rp_db
+from task_planner.models.a2rp.database import SessionLocal, init_db
 from task_planner.services.a2rp import (
     AssignmentService,
     ProjectService,
@@ -29,7 +29,7 @@ def main() -> None:
 
     # Initialize database
     print("1. Initializing database...")
-    init_a2rp_db()
+    init_db()
     print("   ✓ Database initialized")
     print()
 
