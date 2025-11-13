@@ -1,15 +1,6 @@
-from .person_service import PersonService
-from .planning_service import PlanningService
-from .resource_service import ResourceService
-from .scheduling_service import SchedulingService
-from .task_service import TaskService
-from .team_service import TeamService
+"""
+Legacy services module - deprecated.
+Use task_planner.services.a2rp instead for the new schema.
+"""
 
-__all__ = [
-    "SchedulingService",
-    "TeamService",
-    "PersonService",
-    "ResourceService",
-    "TaskService",
-    "PlanningService",
-]
+__all__: list[str] = []

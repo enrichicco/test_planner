@@ -1,23 +1,8 @@
-from .assignment import Assignment
-from .base import Base
-from .exception import ExceptionType, ScheduleException
-from .person import Person
-from .resource import Resource
-from .schedule import Schedule, ScheduleStatus
-from .task import Task, TaskPriority, TaskStatus
-from .team import Team
+"""
+Legacy models module - deprecated.
+Use task_planner.models.a2rp instead for the new schema.
+"""
 
-__all__ = [
-    "Base",
-    "Team",
-    "Person",
-    "Resource",
-    "Task",
-    "TaskStatus",
-    "TaskPriority",
-    "Assignment",
-    "Schedule",
-    "ScheduleStatus",
-    "ScheduleException",
-    "ExceptionType",
-]
+from .base import Base
+
+__all__ = ["Base"]
