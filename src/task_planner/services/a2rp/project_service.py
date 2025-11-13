@@ -8,7 +8,6 @@ from typing import List, Optional
 from sqlalchemy.orm import Session
 
 from ...models.a2rp import Project, ProjectStatus, ProjectType
-from ..exceptions import ValidationException
 
 
 class ProjectService:
@@ -36,7 +35,7 @@ class ProjectService:
             .first()
         )
         if not project_type:
-            raise ValidationException(f"ProjectType {project_type_id} not found")
+            raise LookupError(f"ProjectType {project_type_id} not found")
 
         # Validate project status exists
         project_status = (
@@ -45,7 +44,7 @@ class ProjectService:
             .first()
         )
         if not project_status:
-            raise ValidationException(f"ProjectStatus {project_status_id} not found")
+            raise LookupError(f"ProjectStatus {project_status_id} not found")
 
         project = Project(
             name=name,

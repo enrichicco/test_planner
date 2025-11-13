@@ -5,7 +5,6 @@ Report generation service for a2rp schema.
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from ...models.a2rp import Assignment, Project, Resource, Task
@@ -23,9 +22,7 @@ class ReportGenerator:
         """
         self.db = db
 
-    def generate_project_summary(
-        self, project_status_id: Optional[int] = None
-    ) -> Dict[str, Any]:
+    def generate_project_summary(self, project_status_id: Optional[int] = None) -> Dict[str, Any]:
         """
         Generate a summary report of all projects.
 
@@ -52,8 +49,9 @@ class ReportGenerator:
         avg_duration_days = None
         if active_projects:
             durations = [
-                (p.end_date - p.start_date).days  # type: ignore[union-attr]
+                (p.end_date - p.start_date).days
                 for p in active_projects
+                if p.start_date is not None and p.end_date is not None
             ]
             avg_duration_days = sum(durations) / len(durations) if durations else None
 
@@ -99,9 +97,7 @@ class ReportGenerator:
         # Count tasks with/without dates
         tasks_with_dates = sum(1 for t in tasks if t.start_date and t.end_date)
         tasks_overdue = sum(
-            1
-            for t in tasks
-            if t.end_date and t.end_date < datetime.now() and t.task_status_id != 3
+            1 for t in tasks if t.end_date and t.end_date < datetime.now() and t.task_status_id != 3
         )  # Assuming 3 is "completed"
 
         return {
@@ -115,41 +111,33 @@ class ReportGenerator:
 
     def generate_resource_workload_report(
         self, resource_type_id: Optional[int] = None
-    ) -> List[Dict[str, Any]]:
-        """
-        Generate workload report for resources.
-
-        Args:
-            resource_type_id: Optional filter by resource type
-
-        Returns:
-            List of dictionaries with resource workload information
-        """
+    ) -> List[Dict[str, float | int | str | None]]:
         query = self.db.query(Resource)
         if resource_type_id is not None:
             query = query.filter(Resource.resource_type_id == resource_type_id)
 
         resources = query.all()
+        report: List[Dict[str, float | int | str | None]] = []
 
-        report = []
         for resource in resources:
-            # Get assignments for this resource
             assignments = (
                 self.db.query(Assignment)
                 .filter(Assignment.resource_id == resource.resource_id)
                 .all()
             )
 
-            total_assigned_work = sum(a.work or 0.0 for a in assignments)
-            total_actual_work = sum(a.actual_work or 0.0 for a in assignments)
+            # Convert Decimal to float, handle None
+            total_assigned_work = sum(
+                float(a.work) if a.work is not None else 0.0 for a in assignments
+            )
+            total_actual_work = sum(
+                float(a.actual_work) if a.actual_work is not None else 0.0 for a in assignments
+            )
             active_assignments = len(assignments)
 
-            # Calculate utilization (if actual work is recorded)
-            utilization_percentage = None
+            utilization_percentage: Optional[float] = None
             if total_assigned_work > 0 and total_actual_work > 0:
-                utilization_percentage = (
-                    total_actual_work / total_assigned_work
-                ) * 100
+                utilization_percentage = (total_actual_work / total_assigned_work) * 100
 
             report.append(
                 {
@@ -161,14 +149,13 @@ class ReportGenerator:
                     "total_actual_work_hours": round(total_actual_work, 2),
                     "utilization_percentage": (
                         round(utilization_percentage, 2)
-                        if utilization_percentage
+                        if utilization_percentage is not None
                         else None
                     ),
                 }
             )
 
-        # Sort by total assigned work descending
-        report.sort(key=lambda x: x["total_assigned_work_hours"], reverse=True)
+        report.sort(key=lambda x: float(x["total_assigned_work_hours"] or 0.0), reverse=True)
 
         return report
 
@@ -200,11 +187,7 @@ class ReportGenerator:
 
         report = []
         for assignment in assignments:
-            task = (
-                self.db.query(Task)
-                .filter(Task.task_id == assignment.task_id)
-                .first()
-            )
+            task = self.db.query(Task).filter(Task.task_id == assignment.task_id).first()
             resource = (
                 self.db.query(Resource)
                 .filter(Resource.resource_id == assignment.resource_id)
@@ -232,9 +215,7 @@ class ReportGenerator:
                     "start_date": (
                         assignment.start_date.isoformat() if assignment.start_date else None
                     ),
-                    "end_date": (
-                        assignment.end_date.isoformat() if assignment.end_date else None
-                    ),
+                    "end_date": (assignment.end_date.isoformat() if assignment.end_date else None),
                 }
             )
 
@@ -261,11 +242,7 @@ class ReportGenerator:
         report = []
         for project in projects:
             # Get tasks for this project
-            tasks = (
-                self.db.query(Task)
-                .filter(Task.project_id == project.project_id)
-                .all()
-            )
+            tasks = self.db.query(Task).filter(Task.project_id == project.project_id).all()
 
             total_tasks = len(tasks)
             total_work = sum(t.work or 0.0 for t in tasks)
@@ -274,9 +251,7 @@ class ReportGenerator:
             completed_tasks = sum(
                 1 for t in tasks if t.task_status_id == 3
             )  # Assuming 3 is completed
-            completion_percentage = (
-                (completed_tasks / total_tasks * 100) if total_tasks > 0 else 0
-            )
+            completion_percentage = (completed_tasks / total_tasks * 100) if total_tasks > 0 else 0
 
             # Check if overdue
             is_overdue = False
@@ -288,12 +263,8 @@ class ReportGenerator:
                     "project_id": project.project_id,
                     "project_name": project.name,
                     "project_status_id": project.project_status_id,
-                    "start_date": (
-                        project.start_date.isoformat() if project.start_date else None
-                    ),
-                    "end_date": (
-                        project.end_date.isoformat() if project.end_date else None
-                    ),
+                    "start_date": (project.start_date.isoformat() if project.start_date else None),
+                    "end_date": (project.end_date.isoformat() if project.end_date else None),
                     "total_tasks": total_tasks,
                     "completed_tasks": completed_tasks,
                     "completion_percentage": round(completion_percentage, 2),

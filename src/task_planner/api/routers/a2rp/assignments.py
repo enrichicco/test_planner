@@ -14,34 +14,65 @@ from ...schemas_a2rp import AssignmentCreate, AssignmentResponse, AssignmentUpda
 router = APIRouter()
 
 
-@router.post("/", response_model=AssignmentResponse, status_code=201)  # type: ignore[misc]
+@router.post(
+    "/",
+    response_model=AssignmentResponse,
+    status_code=201,
+    responses={
+        404: {"description": "Not Found"},
+        500: {"description": "Internal Server Error"},
+    },
+)  # type: ignore[misc]
 def create_assignment(
     assignment: AssignmentCreate, db: Session = Depends(get_db)
 ) -> AssignmentResponse:
     """Create a new assignment."""
-    service = AssignmentService(db)
-    db_assignment = service.create_assignment(
-        task_id=assignment.task_id,
-        resource_id=assignment.resource_id,
-        work=assignment.work,
-        start_date=assignment.start_date,
-        end_date=assignment.end_date,
-    )
-    return AssignmentResponse.model_validate(db_assignment)
+    try:
+        service = AssignmentService(db)
+        db_assignment = service.create_assignment(
+            task_id=assignment.task_id,
+            resource_id=assignment.resource_id,
+            work=assignment.work,
+            start_date=assignment.start_date,
+            end_date=assignment.end_date,
+        )
+
+        return AssignmentResponse.model_validate(db_assignment)
+    except LookupError as le:
+        raise HTTPException(status_code=404, detail=str(le))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/{assignment_id}", response_model=AssignmentResponse)  # type: ignore[misc]
+@router.get(
+    "/{assignment_id}",
+    response_model=AssignmentResponse,
+    responses={
+        404: {"description": "Not Found"},
+        500: {"description": "Internal Server Error"},
+    },
+)  # type: ignore[misc]
 def get_assignment(assignment_id: int, db: Session = Depends(get_db)) -> AssignmentResponse:
     """Get an assignment by ID."""
-    service = AssignmentService(db)
-    assignment = service.get_assignment(assignment_id)
-    if not assignment:
-        raise HTTPException(status_code=404, detail="Assignment not found")
+    try:
+        service = AssignmentService(db)
+        assignment = service.get_assignment(assignment_id)
 
-    return AssignmentResponse.model_validate(assignment)
+        if not assignment:
+            raise HTTPException(status_code=404, detail="Assignment not found")
+
+        return AssignmentResponse.model_validate(assignment)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/", response_model=List[AssignmentResponse])  # type: ignore[misc]
+@router.get(
+    "/",
+    response_model=List[AssignmentResponse],
+    responses={
+        500: {"description": "Internal Server Error"},
+    },
+)  # type: ignore[misc]
 def list_assignments(
     task_id: Optional[int] = None,
     resource_id: Optional[int] = None,
@@ -49,34 +80,66 @@ def list_assignments(
     db: Session = Depends(get_db),
 ) -> List[AssignmentResponse]:
     """List all assignments."""
-    service = AssignmentService(db)
-    assignments = service.list_assignments(task_id=task_id, resource_id=resource_id, limit=limit)
-    return [AssignmentResponse.model_validate(a) for a in assignments]
+    try:
+        service = AssignmentService(db)
+        assignments = service.list_assignments(
+            task_id=task_id, resource_id=resource_id, limit=limit
+        )
+
+        return [AssignmentResponse.model_validate(a) for a in assignments]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.patch("/{assignment_id}", response_model=AssignmentResponse)  # type: ignore[misc]
+@router.patch(
+    "/{assignment_id}",
+    response_model=AssignmentResponse,
+    responses={
+        404: {"description": "Not Found"},
+        500: {"description": "Internal Server Error"},
+    },
+)  # type: ignore[misc]
 def update_assignment(
     assignment_id: int, assignment: AssignmentUpdate, db: Session = Depends(get_db)
 ) -> AssignmentResponse:
     """Update an assignment."""
-    service = AssignmentService(db)
-    updated_assignment = service.update_assignment(
-        assignment_id=assignment_id,
-        work=assignment.work,
-        start_date=assignment.start_date,
-        end_date=assignment.end_date,
-        actual_work=assignment.actual_work,
-    )
-    if not updated_assignment:
-        raise HTTPException(status_code=404, detail="Assignment not found")
+    try:
+        service = AssignmentService(db)
+        updated_assignment = service.update_assignment(
+            assignment_id=assignment_id,
+            work=assignment.work,
+            start_date=assignment.start_date,
+            end_date=assignment.end_date,
+            actual_work=assignment.actual_work,
+        )
 
-    return AssignmentResponse.model_validate(updated_assignment)
+        if not updated_assignment:
+            raise HTTPException(status_code=404, detail="Assignment not found")
+
+        return AssignmentResponse.model_validate(updated_assignment)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/{assignment_id}", status_code=204)  # type: ignore[misc]
+@router.delete(
+    "/{assignment_id}",
+    status_code=204,
+    responses={
+        404: {"description": "Not Found"},
+        500: {"description": "Internal Server Error"},
+    },
+)  # type: ignore[misc]
 def delete_assignment(assignment_id: int, db: Session = Depends(get_db)) -> None:
     """Delete an assignment."""
-    service = AssignmentService(db)
-    deleted = service.delete_assignment(assignment_id)
-    if not deleted:
-        raise HTTPException(status_code=404, detail="Assignment not found")
+    try:
+        service = AssignmentService(db)
+        deleted = service.delete_assignment(assignment_id)
+
+        if not deleted:
+            raise HTTPException(status_code=404, detail="Assignment not found")
+
+        return None
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
