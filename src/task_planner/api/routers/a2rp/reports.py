@@ -2,7 +2,7 @@
 Reports API endpoints for a2rp schema.
 """
 
-from typing import Annotated, Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
@@ -89,9 +89,9 @@ def get_resource_workload(
     responses={500: {"description": "Internal Server Error"}},
 )
 def get_assignment_report(
-    project_id: Annotated[Optional[int], Query(None, description="Filter by project ID")],
-    resource_id: Annotated[Optional[int], Query(None, description="Filter by resource ID")],
-    include_completed: Annotated[bool, Query(True, description="Include completed assignments")],
+    project_id: Optional[int] = Query(None, description="Filter by project ID"),
+    resource_id: Optional[int] = Query(None, description="Filter by resource ID"),
+    include_completed: bool = Query(True, description="Include completed assignments"),
     db: Session = Depends(get_db),
 ) -> List[Dict[str, Any]]:
     """
