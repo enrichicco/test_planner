@@ -218,15 +218,11 @@ class ReportGenerator:
                     "resource_name": resource.name,
                     "assigned_work_hours": assignment.work,
                     "actual_work_hours": assignment.actual_work,
-                    "variance_hours": (
-                        round(float(variance_hours), 2) if variance_hours else None
-                    ),
+                    "variance_hours": (round(float(variance_hours), 2) if variance_hours else None),
                     "start_date": (
                         assignment.start_date.isoformat() if assignment.start_date else None
                     ),
-                    "end_date": (
-                        assignment.end_date.isoformat() if assignment.end_date else None
-                    ),
+                    "end_date": (assignment.end_date.isoformat() if assignment.end_date else None),
                 }
             )
 
