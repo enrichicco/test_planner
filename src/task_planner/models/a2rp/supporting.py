@@ -90,7 +90,9 @@ class ProcessingOrder(A2RPBase):
     technical_feature: Mapped[Optional["TechnicalFeature"]] = relationship(
         "TechnicalFeature", back_populates="processing_orders"
     )
-    tasks: Mapped[List["Task"]] = relationship("Task", back_populates="processing_order")
+    tasks: Mapped[List["Task"]] = relationship(
+        "Task", back_populates="processing_order", foreign_keys="Task.processing_order_id"
+    )
 
     def __repr__(self) -> str:
         return f"<ProcessingOrder(id={self.processing_order_id}, name='{self.name}')>"

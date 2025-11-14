@@ -414,7 +414,7 @@ class Task(A2RPBase, TimestampMixin, RevisionMixin):
     task_status: Mapped["TaskStatus"] = relationship("TaskStatus", back_populates="tasks")
     project: Mapped[Optional["Project"]] = relationship("Project", back_populates="tasks")
     processing_order: Mapped[Optional["ProcessingOrder"]] = relationship(
-        "ProcessingOrder", back_populates="tasks"
+        "ProcessingOrder", back_populates="tasks", foreign_keys=[processing_order_id]
     )
     imputation_ce: Mapped[Optional["Imputation"]] = relationship(
         "Imputation", back_populates="tasks"
