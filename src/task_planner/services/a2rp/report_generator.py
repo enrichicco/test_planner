@@ -3,6 +3,7 @@ Report generation service for a2rp schema.
 """
 
 from datetime import datetime
+from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
 from sqlalchemy.orm import Session
@@ -92,7 +93,7 @@ class ReportGenerator:
             status_counts[status_id] = status_counts.get(status_id, 0) + 1
 
         # Calculate work totals
-        total_work = sum(task.work or 0.0 for task in tasks)
+        total_work = sum(task.work or Decimal(0.0) for task in tasks)
 
         # Count tasks with/without dates
         tasks_with_dates = sum(1 for t in tasks if t.start_date and t.end_date)
@@ -245,7 +246,7 @@ class ReportGenerator:
             tasks = self.db.query(Task).filter(Task.project_id == project.project_id).all()
 
             total_tasks = len(tasks)
-            total_work = sum(t.work or 0.0 for t in tasks)
+            total_work = sum(t.work or Decimal(0.0) for t in tasks)
 
             # Calculate completion percentage
             completed_tasks = sum(
