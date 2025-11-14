@@ -6,7 +6,7 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from ...models.a2rp import Assignment, Project, Resource, Task
 
@@ -177,26 +177,32 @@ class ReportGenerator:
         Returns:
             List of dictionaries with assignment details
         """
-        query = self.db.query(Assignment).join(Task).join(Resource)
+        # Use joinedload to eagerly load task and resource in a single query
+        # This prevents N+1 query problem
+        query = (
+            self.db.query(Assignment)
+            .options(joinedload(Assignment.task), joinedload(Assignment.resource))
+            .join(Task)
+        )
 
+        # Apply filters
         if project_id is not None:
             query = query.filter(Task.project_id == project_id)
         if resource_id is not None:
             query = query.filter(Assignment.resource_id == resource_id)
 
+        # Filter by completion status if needed
+        if not include_completed:
+            # Exclude assignments where actual_work is recorded (completed)
+            query = query.filter(Assignment.actual_work.is_(None))
+
         assignments = query.all()
 
         report = []
         for assignment in assignments:
-            task = self.db.query(Task).filter(Task.task_id == assignment.task_id).first()
-            resource = (
-                self.db.query(Resource)
-                .filter(Resource.resource_id == assignment.resource_id)
-                .first()
-            )
-
-            if not task or not resource:
-                continue
+            # Use the eagerly loaded relationships - no additional queries!
+            task = assignment.task
+            resource = assignment.resource
 
             # Calculate variance
             variance_hours = None
@@ -212,11 +218,15 @@ class ReportGenerator:
                     "resource_name": resource.name,
                     "assigned_work_hours": assignment.work,
                     "actual_work_hours": assignment.actual_work,
-                    "variance_hours": round(variance_hours, 2) if variance_hours else None,
+                    "variance_hours": (
+                        round(float(variance_hours), 2) if variance_hours else None
+                    ),
                     "start_date": (
                         assignment.start_date.isoformat() if assignment.start_date else None
                     ),
-                    "end_date": (assignment.end_date.isoformat() if assignment.end_date else None),
+                    "end_date": (
+                        assignment.end_date.isoformat() if assignment.end_date else None
+                    ),
                 }
             )
 
