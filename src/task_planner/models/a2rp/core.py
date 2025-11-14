@@ -43,7 +43,7 @@ if TYPE_CHECKING:
     from .supporting import ProcessingOrder
 
 
-class Project(A2RPBase, TimestampMixin, RevisionMixin):
+class Project(A2RPBase, TimestampMixin):
     """Main project entity with extensive earned value management fields."""
 
     __tablename__ = "project"
@@ -196,6 +196,7 @@ class Project(A2RPBase, TimestampMixin, RevisionMixin):
     # Other fields
     workspace_internal_h_ref: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     calculations_are_stale: Mapped[Optional[bool]] = mapped_column(Boolean, nullable=True)
+    modified_revision_counter: Mapped[Optional[int]] = mapped_column(nullable=True)
     fes_offer: Mapped[Optional[bool]] = mapped_column(Boolean, nullable=True)
     accounting_sector: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
 
@@ -454,7 +455,7 @@ class Task(A2RPBase, TimestampMixin, RevisionMixin):
         return f"<Task(id={self.task_id}, name='{self.name}', status_id={self.task_status_id})>"
 
 
-class Resource(A2RPBase, TimestampMixin, RevisionMixin):
+class Resource(A2RPBase, TimestampMixin):
     """Resource (person or equipment) that can be assigned to tasks."""
 
     __tablename__ = "resource"
@@ -487,6 +488,7 @@ class Resource(A2RPBase, TimestampMixin, RevisionMixin):
     resource_cost_center_id: Mapped[Optional[int]] = mapped_column(
         Integer, ForeignKey("a2rp.cost_center.cost_center_id"), nullable=True
     )
+    modified_revision_counter: Mapped[Optional[int]] = mapped_column(nullable=True)
     organizational_unit_id: Mapped[Optional[int]] = mapped_column(
         Integer, ForeignKey("a2rp.organizational_unit.organizational_unit_id"), nullable=True
     )
