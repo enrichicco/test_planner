@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <!-- Page Header -->
+    <header class="page-header">
+        <div>
+            <h1 class="page-title">Dashboard</h1>
+            <p class="text-gray-600">Overview of your task planning system</p>
+        </div>
+    </header>
+
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-4 gap-6 mb-8">
+        <!-- Projects Card -->
+        <div class="stat-card">
+            <div class="stat-value"
+                 hx-get="/api/v1/projects?limit=1000"
+                 hx-trigger="load"
+                 hx-swap="innerHTML"
+                 hx-target="this">
+                <div class="loading-spinner"></div>
+            </div>
+            <div class="stat-label">Projects</div>
+        </div>
+
+        <!-- Tasks Card -->
+        <div class="stat-card">
+            <div class="stat-value"
+                 hx-get="/api/v1/tasks?limit=1000"
+                 hx-trigger="load"
+                 hx-swap="innerHTML"
+                 hx-target="this">
+                <div class="loading-spinner"></div>
+            </div>
+            <div class="stat-label">Tasks</div>
+        </div>
+
+        <!-- Resources Card -->
+        <div class="stat-card">
+            <div class="stat-value"
+                 hx-get="/api/v1/resources?limit=1000"
+                 hx-trigger="load"
+                 hx-swap="innerHTML"
+                 hx-target="this">
+                <div class="loading-spinner"></div>
+            </div>
+            <div class="stat-label">Resources</div>
+        </div>
+
+        <!-- Assignments Card -->
+        <div class="stat-card">
+            <div class="stat-value"
+                 hx-get="/api/v1/assignments?limit=1000"
+                 hx-trigger="load"
+                 hx-swap="innerHTML"
+                 hx-target="this">
+                <div class="loading-spinner"></div>
+            </div>
+            <div class="stat-label">Assignments</div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="card mb-8">
+        <div class="card-header">
+            <h2 class="text-xl font-bold">Quick Actions</h2>
+        </div>
+        <div class="card-body">
+            <div class="grid grid-cols-4 gap-4">
+                <a href="/projects" class="btn btn-secondary">
+                    <span>View All Projects</span>
+                </a>
+                <a href="/tasks" class="btn btn-secondary">
+                    <span>View All Tasks</span>
+                </a>
+                <a href="/resources" class="btn btn-secondary">
+                    <span>Manage Resources</span>
+                </a>
+                <a href="/reports" class="btn btn-secondary">
+                    <span>Generate Reports</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity / Overview -->
+    <div class="grid grid-cols-2 gap-6">
+        <!-- Recent Projects -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="text-xl font-bold">Recent Projects</h2>
+            </div>
+            <div class="card-body">
+                <div id="recent-projects"
+                     hx-get="/api/v1/projects?limit=5"
+                     hx-trigger="load"
+                     hx-swap="innerHTML">
+                    <div class="loading-spinner"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Tasks -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="text-xl font-bold">Active Tasks</h2>
+            </div>
+            <div class="card-body">
+                <div id="active-tasks"
+                     hx-get="/api/v1/tasks?limit=5"
+                     hx-trigger="load"
+                     hx-swap="innerHTML">
+                    <div class="loading-spinner"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Handle HTMX responses for statistics
+document.body.addEventListener('htmx:afterSwap', function(event) {
+    // If the response is from the API endpoints, extract the count
+    if (event.detail.xhr && event.detail.xhr.responseText) {
+        try {
+            const data = JSON.parse(event.detail.xhr.responseText);
+
+            // For list endpoints that return arrays
+            if (Array.isArray(data)) {
+                event.target.innerHTML = data.length;
+            }
+            // For paginated responses with 'items' array
+            else if (data.items && Array.isArray(data.items)) {
+                event.target.innerHTML = data.total || data.items.length;
+            }
+        } catch (e) {
+            // If parsing fails, leave the content as-is
+            console.error('Error parsing response:', e);
+        }
+    }
+});
+
+// Handle displaying recent projects
+document.body.addEventListener('htmx:afterSwap', function(event) {
+    if (event.target.id === 'recent-projects' || event.target.id === 'active-tasks') {
+        try {
+            const data = JSON.parse(event.detail.xhr.responseText);
+            const items = Array.isArray(data) ? data : (data.items || []);
+
+            if (items.length === 0) {
+                event.target.innerHTML = '<p class="text-gray-500">No items found</p>';
+                return;
+            }
+
+            let html = '<ul class="space-y-2">';
+            items.slice(0, 5).forEach(item => {
+                const name = item.name || item.title || item.description || 'Untitled';
+                const id = item.id;
+                const type = event.target.id === 'recent-projects' ? 'project' : 'task';
+
+                html += `
+                    <li class="p-3 border border-gray-200 rounded hover:bg-gray-50">
+                        <div class="font-medium">${name}</div>
+                        ${item.description ? `<div class="text-sm text-gray-600 truncate">${item.description}</div>` : ''}
+                    </li>
+                `;
+            });
+            html += '</ul>';
+
+            event.target.innerHTML = html;
+        } catch (e) {
+            console.error('Error rendering items:', e);
+        }
+    }
+});
+</script>
+{% endblock %}

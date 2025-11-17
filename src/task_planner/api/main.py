@@ -2,13 +2,16 @@
 Main FastAPI application.
 """
 
+from pathlib import Path
 from typing import Dict
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from ..config import settings
 from .routers.a2rp import assignments, projects, reports, resources, tasks
+from .web import router as web_router
 
 app = FastAPI(
     title=settings.api_title,
@@ -25,6 +28,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Mount static files
+static_dir = Path(__file__).parent.parent / "static"
+app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
+
 # Include a2rp routers
 app.include_router(projects.router, prefix="/api/v1/projects", tags=["Projects"])
 app.include_router(tasks.router, prefix="/api/v1/tasks", tags=["Tasks"])
@@ -32,10 +39,13 @@ app.include_router(resources.router, prefix="/api/v1/resources", tags=["Resource
 app.include_router(assignments.router, prefix="/api/v1/assignments", tags=["Assignments"])
 app.include_router(reports.router, prefix="/api/v1/reports", tags=["Reports"])
 
+# Include web UI routes (must be last to allow API routes to take precedence)
+app.include_router(web_router)
 
-@app.get("/")
-async def root() -> Dict[str, str]:
-    """Root endpoint."""
+
+@app.get("/api")
+async def api_root() -> Dict[str, str]:
+    """API root endpoint."""
     return {
         "name": settings.api_title,
         "version": settings.api_version,
