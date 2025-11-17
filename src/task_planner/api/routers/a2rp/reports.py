@@ -107,7 +107,7 @@ def get_assignment_report(
             project_id=project_id,
             resource_id=resource_id,
             include_completed=include_completed,
-        )
+        )[:5]  # NOTE: temporary
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
