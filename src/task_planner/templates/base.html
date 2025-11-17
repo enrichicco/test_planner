@@ -3,13 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Task Planner{% endblock %} - Plug-in</title>
+    <title>{% block title %}Task Planner{% endblock %} - {{ brand_display_name }}</title>
 
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="{{ url_for('static', path='/img/favicon.ico') }}">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', path=brand.favicon_path) }}">
 
     <!-- Styles -->
     <link rel="stylesheet" href="{{ url_for('static', path='/css/style.css') }}">
+
+    <!-- Dynamic Brand Colors -->
+    <style>
+        :root {
+            --brand-primary: {{ brand.primary_color }};
+            --brand-primary-dark: {{ brand.primary_color_dark }};
+            --brand-primary-light: {{ brand.primary_color_light }};
+        }
+    </style>
 
     <!-- HTMX -->
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
@@ -21,7 +30,7 @@
     <nav class="navbar">
         <div class="navbar-container">
             <a href="/" class="navbar-brand">
-                <img src="{{ url_for('static', path='/img/logo.png') }}" alt="Plug-in Logo">
+                <img src="{{ url_for('static', path=brand.logo_path) }}" alt="{{ brand_display_name }} Logo">
                 <span>Task Planner</span>
             </a>
 
@@ -70,10 +79,10 @@
         <div style="max-width: 1400px; margin: 0 auto;">
             <div class="divider-brand"></div>
             <p>
-                <strong>Plug-in Task Planner</strong> - Project Management & Scheduling
+                <strong>{{ brand_display_name }} Task Planner</strong> - Project Management & Scheduling
             </p>
             <p style="margin-top: 0.5rem;">
-                &copy; 2025 <a href="https://www.plug-in.it" target="_blank" style="color: var(--brand-primary);">Plug-in</a> |
+                &copy; 2025 <a href="{{ brand.website_url }}" target="_blank" style="color: var(--brand-primary);">{{ brand_display_name }}</a> |
                 Version {{ version }}
             </p>
         </div>

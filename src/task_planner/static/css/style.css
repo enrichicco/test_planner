@@ -1,13 +1,13 @@
 /**
- * Task Planner Web UI - Plug-in Branding
- * Brand Color: #ed5400 (Plug-in Orange)
+ * Task Planner Web UI - Multi-Brand Support
+ * Brand colors are injected dynamically via template
  */
 
 :root {
-    /* Plug-in Brand Colors */
-    --brand-primary: #ed5400;
-    --brand-primary-dark: #c94700;
-    --brand-primary-light: #ff6a1a;
+    /* Brand Colors - injected dynamically by template */
+    /* --brand-primary: set in template */
+    /* --brand-primary-dark: set in template */
+    /* --brand-primary-light: set in template */
 
     /* Neutral Colors */
     --gray-50: #f9fafb;
