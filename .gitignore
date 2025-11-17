@@ -209,3 +209,4 @@ __marimo__/
 # Task Planner specific
 *.db
 task_planner.db
+*.code-workspace
