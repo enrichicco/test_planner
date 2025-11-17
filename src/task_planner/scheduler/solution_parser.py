@@ -55,13 +55,8 @@ class SolutionParser:
             return assignments, metadata
 
         # Extract solution metadata
-        try:
-            if hasattr(solution, "objective"):
-                metadata["objective_value"] = float(solution.objective())
-            if hasattr(solution, "makespan"):
-                metadata["makespan"] = solution.makespan()
-        except Exception:
-            pass
+        metadata["objective_value"] = float(getattr(solution, "objective", lambda: None)() or 0)
+        metadata["makespan"] = getattr(solution, "makespan", lambda: None)()
 
         # Parse task assignments
         task_dict = {task.task_id: task for task in tasks}
