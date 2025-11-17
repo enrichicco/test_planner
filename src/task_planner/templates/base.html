@@ -1,93 +1,141 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Task Planner{% endblock %} - {{ brand_display_name }}</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <title>
+      {% block title %}Task Planner{% endblock %} - {{ brand_display_name }}
+    </title>
 
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="{{ url_for('static', path=brand.favicon_path) }}">
+    <link
+      rel="icon"
+      type="image/x-icon"
+      href="{{ url_for('static', path=brand.favicon_path) }}"
+    />
 
     <!-- Styles -->
-    <link rel="stylesheet" href="{{ url_for('static', path='/css/style.css') }}">
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', path='/css/style.css') }}"
+    />
 
     <!-- Dynamic Brand Colors -->
     <style>
-        :root {
-            --brand-primary: {{ brand.primary_color }};
-            --brand-primary-dark: {{ brand.primary_color_dark }};
-            --brand-primary-light: {{ brand.primary_color_light }};
-        }
+      :root {
+          --brand-primary: {{ brand.primary_color }};
+          --brand-primary-dark: {{ brand.primary_color_dark }};
+          --brand-primary-light: {{ brand.primary_color_light }};
+      }
     </style>
 
     <!-- HTMX -->
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
 
     {% block extra_head %}{% endblock %}
-</head>
-<body>
+  </head>
+  <body>
     <!-- Navigation Bar -->
     <nav class="navbar">
-        <div class="navbar-container">
-            <a href="/" class="navbar-brand">
-                <img src="{{ url_for('static', path=brand.logo_path) }}" alt="{{ brand_display_name }} Logo">
-                <span>Task Planner</span>
-            </a>
+      <div class="navbar-container">
+        <a
+          href="/"
+          class="navbar-brand"
+        >
+          <img
+            src="{{ url_for('static', path=brand.logo_path) }}"
+            alt="{{ brand_display_name }} Logo"
+          />
+          <span>Task Planner</span>
+        </a>
 
-            <ul class="navbar-nav">
-                <li>
-                    <a href="/" class="nav-link {% if request.url.path == '/' %}active{% endif %}">
-                        Dashboard
-                    </a>
-                </li>
-                <li>
-                    <a href="/projects" class="nav-link {% if '/projects' in request.url.path %}active{% endif %}">
-                        Projects
-                    </a>
-                </li>
-                <li>
-                    <a href="/tasks" class="nav-link {% if '/tasks' in request.url.path %}active{% endif %}">
-                        Tasks
-                    </a>
-                </li>
-                <li>
-                    <a href="/resources" class="nav-link {% if '/resources' in request.url.path %}active{% endif %}">
-                        Resources
-                    </a>
-                </li>
-                <li>
-                    <a href="/assignments" class="nav-link {% if '/assignments' in request.url.path %}active{% endif %}">
-                        Assignments
-                    </a>
-                </li>
-                <li>
-                    <a href="/reports" class="nav-link {% if '/reports' in request.url.path %}active{% endif %}">
-                        Reports
-                    </a>
-                </li>
-            </ul>
-        </div>
+        <ul class="navbar-nav">
+          <li>
+            <a
+              href="/"
+              class="nav-link {% if request.url.path == '/' %}active{% endif %}"
+            >
+              Dashboard
+            </a>
+          </li>
+          <li>
+            <a
+              href="/projects"
+              class="nav-link {% if '/projects' in request.url.path %}active{% endif %}"
+            >
+              Projects
+            </a>
+          </li>
+          <li>
+            <a
+              href="/tasks"
+              class="nav-link {% if '/tasks' in request.url.path %}active{% endif %}"
+            >
+              Tasks
+            </a>
+          </li>
+          <li>
+            <a
+              href="/resources"
+              class="nav-link {% if '/resources' in request.url.path %}active{% endif %}"
+            >
+              Resources
+            </a>
+          </li>
+          <li>
+            <a
+              href="/assignments"
+              class="nav-link {% if '/assignments' in request.url.path %}active{% endif %}"
+            >
+              Assignments
+            </a>
+          </li>
+          <li>
+            <a
+              href="/reports"
+              class="nav-link {% if '/reports' in request.url.path %}active{% endif %}"
+            >
+              Reports
+            </a>
+          </li>
+        </ul>
+      </div>
     </nav>
 
     <!-- Main Content -->
-    <main class="main-container">
-        {% block content %}{% endblock %}
-    </main>
+    <main class="main-container">{% block content %}{% endblock %}</main>
 
     <!-- Footer -->
-    <footer style="text-align: center; padding: 2rem; color: var(--gray-500); font-size: 0.875rem;">
-        <div style="max-width: 1400px; margin: 0 auto;">
-            <div class="divider-brand"></div>
-            <p>
-                <strong>{{ brand_display_name }} Task Planner</strong> - Project Management & Scheduling
-            </p>
-            <p style="margin-top: 0.5rem;">
-                &copy; 2025 <a href="{{ brand.website_url }}" target="_blank" style="color: var(--brand-primary);">{{ brand_display_name }}</a> |
-                Version {{ version }}
-            </p>
-        </div>
+    <footer
+      style="
+        text-align: center;
+        padding: 2rem;
+        color: var(--gray-500);
+        font-size: 0.875rem;
+      "
+    >
+      <div style="max-width: 1400px; margin: 0 auto">
+        <div class="divider-brand"></div>
+        <p>
+          <strong>{{ brand_display_name }} Task Planner</strong> - Project
+          Management & Scheduling
+        </p>
+        <p style="margin-top: 0.5rem">
+          &copy; 2025
+          <a
+            href="{{ brand.website_url }}"
+            target="_blank"
+            style="color: var(--brand-primary)"
+            >{{ brand_display_name }}</a
+          >
+          | Version {{ version }}
+        </p>
+      </div>
     </footer>
 
     {% block extra_scripts %}{% endblock %}
-</body>
+  </body>
 </html>
