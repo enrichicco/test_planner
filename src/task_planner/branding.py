@@ -10,7 +10,6 @@ Brand detection is based on:
 from dataclasses import dataclass
 from typing import Literal
 
-
 BrandName = Literal["plugin", "mcr"]
 
 
@@ -75,7 +74,7 @@ def get_brand_from_domain(host: str) -> BrandName:
     for brand_name, config in BRANDS.items():
         for domain in config.domains:
             if domain in host_lower:
-                return brand_name  # type: ignore
+                return brand_name
 
     return DEFAULT_BRAND
 

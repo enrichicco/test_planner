@@ -4,11 +4,12 @@ Web UI routes for Task Planner.
 This module provides HTML page routes for the web interface.
 """
 
+from pathlib import Path
+from typing import Any, cast
+
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from pathlib import Path
-from typing import Any
 
 from ...branding import BrandName, get_brand_config, get_brand_from_domain
 
@@ -32,7 +33,11 @@ def get_brand_context(request: Request) -> dict[str, Any]:
         Dictionary with brand configuration for template context
     """
     # Check for brand cookie first (highest priority)
-    brand_name: BrandName | None = request.cookies.get("brand")  # type: ignore
+    raw_brand = request.cookies.get("brand")  # raw string or None
+
+    brand_name: BrandName | None = (
+        cast(BrandName, raw_brand) if raw_brand in ("plugin", "mcr") else None
+    )
 
     # Fall back to domain detection
     if not brand_name or brand_name not in ("plugin", "mcr"):
@@ -51,7 +56,7 @@ def get_brand_context(request: Request) -> dict[str, Any]:
 
 
 @router.get("/", response_class=HTMLResponse)
-async def dashboard(request: Request):
+async def dashboard(request: Request) -> HTMLResponse:
     """Dashboard page - overview of system status."""
     context = get_brand_context(request)
     context["request"] = request
@@ -59,7 +64,7 @@ async def dashboard(request: Request):
 
 
 @router.get("/projects", response_class=HTMLResponse)
-async def projects_list(request: Request):
+async def projects_list(request: Request) -> HTMLResponse:
     """Projects list page."""
     context = get_brand_context(request)
     context["request"] = request
@@ -67,7 +72,7 @@ async def projects_list(request: Request):
 
 
 @router.get("/projects/{project_id}", response_class=HTMLResponse)
-async def project_detail(request: Request, project_id: int):
+async def project_detail(request: Request, project_id: int) -> HTMLResponse:
     """Project detail page."""
     context = get_brand_context(request)
     context["request"] = request
@@ -76,7 +81,7 @@ async def project_detail(request: Request, project_id: int):
 
 
 @router.get("/tasks", response_class=HTMLResponse)
-async def tasks_list(request: Request):
+async def tasks_list(request: Request) -> HTMLResponse:
     """Tasks list page."""
     context = get_brand_context(request)
     context["request"] = request
@@ -84,7 +89,7 @@ async def tasks_list(request: Request):
 
 
 @router.get("/resources", response_class=HTMLResponse)
-async def resources_list(request: Request):
+async def resources_list(request: Request) -> HTMLResponse:
     """Resources list page."""
     context = get_brand_context(request)
     context["request"] = request
@@ -92,7 +97,7 @@ async def resources_list(request: Request):
 
 
 @router.get("/assignments", response_class=HTMLResponse)
-async def assignments_list(request: Request):
+async def assignments_list(request: Request) -> HTMLResponse:
     """Assignments list page."""
     context = get_brand_context(request)
     context["request"] = request
@@ -100,7 +105,7 @@ async def assignments_list(request: Request):
 
 
 @router.get("/reports", response_class=HTMLResponse)
-async def reports_page(request: Request):
+async def reports_page(request: Request) -> HTMLResponse:
     """Reports page."""
     context = get_brand_context(request)
     context["request"] = request
@@ -108,7 +113,7 @@ async def reports_page(request: Request):
 
 
 @router.get("/set-brand/{brand_name}")
-async def set_brand(brand_name: BrandName, request: Request):
+async def set_brand(brand_name: BrandName, request: Request) -> RedirectResponse:
     """
     Set the brand cookie for testing purposes.
 
