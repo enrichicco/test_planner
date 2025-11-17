@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.3
+    rev: v0.14.5
     hooks:
       - id: ruff-check # linter
         args: [--fix]
@@ -19,13 +19,13 @@ repos:
       - id: check-merge-conflict
 
   - repo: https://github.com/PyCQA/bandit
-    rev: 1.8.6
+    rev: 1.9.0
     hooks:
     - id: bandit
       files: ^src/
 
   - repo: https://github.com/tox-dev/pyproject-fmt
-    rev: v2.11.0
+    rev: v2.11.1
     hooks:
     - id: pyproject-fmt
 
@@ -33,9 +33,10 @@ repos:
     rev: v0.24.1
     hooks:
     - id: validate-pyproject
+      name: validate pyproject.toml
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.5.1
+    rev: v1.18.2
     hooks:
       - id: mypy
         args: [--config-file=pyproject.toml]
