@@ -12,8 +12,8 @@ from typing import Any
 
 from ...branding import BrandName, get_brand_config, get_brand_from_domain
 
-# Get the templates directory
-templates_dir = Path(__file__).parent.parent.parent / "templates"
+# Get the templates directory (multibrand contains common templates)
+templates_dir = Path(__file__).parent.parent.parent / "templates" / "multibrand"
 templates = Jinja2Templates(directory=str(templates_dir))
 
 router = APIRouter()
