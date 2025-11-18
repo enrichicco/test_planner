@@ -4,39 +4,78 @@
   <header class="page-header">
     <div>
       <h1 class="page-title">Tasks</h1>
-      <p class="text-gray-600">Task list and quick overview</p>
+      <p class="text-gray-600">Manage and track all your tasks</p>
     </div>
   </header>
 
-  <div class="grid grid-cols-3 gap-6 mb-8">
-    <div class="card">
-      <div class="card-header"><h3 class="font-bold">Recent Tasks</h3></div>
-      <div class="card-body">
-        <div
-          hx-get="/api/v1/tasks?limit=5"
-          hx-trigger="load"
-          hx-swap="innerHTML"
-        >
-          <div class="loading-spinner"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-header">
-      <h2 class="text-xl font-bold">Task List</h2>
-    </div>
-    <div class="card-body">
-      <div
-        id="task-list"
-        hx-get="/api/v1/tasks?limit=1000"
-        hx-trigger="load"
-        hx-swap="innerHTML"
-      >
-        <div class="loading-spinner"></div>
-      </div>
-    </div>
+  <div
+    id="tasks-grid"
+    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+    hx-get="/api/v1/tasks?limit=1000"
+    hx-trigger="load"
+    hx-swap="innerHTML"
+  >
+    <div class="loading-spinner"></div>
   </div>
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  document.body.addEventListener("htmx:afterSwap", function (event) {
+    if (event.target.id === "tasks-grid") {
+      try {
+        const data = JSON.parse(event.detail.xhr.responseText);
+        const items = Array.isArray(data) ? data : data.items || [];
+
+        if (items.length === 0) {
+          event.target.innerHTML = '<div class="col-span-full text-center py-12"><p class="text-gray-500 text-lg">No tasks found</p></div>';
+          return;
+        }
+
+        let html = "";
+        items.forEach((task) => {
+          const statusColors = {
+            pending: "bg-gray-400 text-white",
+            in_progress: "bg-info text-white",
+            completed: "bg-success text-white",
+            blocked: "bg-danger text-white",
+            cancelled: "bg-gray-500 text-white",
+          };
+          const statusClass = statusColors[task.status] || "bg-gray-300 text-gray-700";
+
+          const priorityColors = {
+            low: "text-gray-500",
+            medium: "text-warning",
+            high: "text-danger",
+          };
+          const priorityClass = priorityColors[task.priority] || "text-gray-500";
+
+          html += `
+            <div class="card card-accent hover:shadow-lg transition-shadow">
+              <div class="card-header">
+                <h3 class="text-lg font-bold text-gray-900">${task.name || task.description || "Untitled Task"}</h3>
+                <span class="badge ${statusClass}">${task.status || "pending"}</span>
+              </div>
+              <div class="card-body">
+                ${task.description && task.name !== task.description ? `<p class="text-gray-600 mb-4">${task.description}</p>` : ""}
+                <div class="space-y-2 text-sm">
+                  ${task.priority ? `<div class="flex justify-between"><span class="text-gray-500">Priority:</span><span class="font-medium ${priorityClass}">${task.priority.toUpperCase()}</span></div>` : ""}
+                  ${task.estimated_hours ? `<div class="flex justify-between"><span class="text-gray-500">Est. Hours:</span><span class="font-medium">${task.estimated_hours}h</span></div>` : ""}
+                  ${task.actual_hours ? `<div class="flex justify-between"><span class="text-gray-500">Actual Hours:</span><span class="font-medium">${task.actual_hours}h</span></div>` : ""}
+                  ${task.deadline ? `<div class="flex justify-between"><span class="text-gray-500">Deadline:</span><span class="font-medium">${new Date(task.deadline).toLocaleDateString()}</span></div>` : ""}
+                </div>
+              </div>
+            </div>
+          `;
+        });
+
+        event.target.innerHTML = html;
+      } catch (e) {
+        console.error("Error rendering tasks:", e);
+        event.target.innerHTML = '<div class="col-span-full text-center py-12"><p class="text-red-500">Error loading tasks</p></div>';
+      }
+    }
+  });
+</script>
 {% endblock %}

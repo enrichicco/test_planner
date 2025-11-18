@@ -4,39 +4,69 @@ content %}
   <header class="page-header">
     <div>
       <h1 class="page-title">Projects</h1>
-      <p class="text-gray-600">List and quick stats for projects</p>
+      <p class="text-gray-600">Manage and track all your projects</p>
     </div>
   </header>
 
-  <div class="grid grid-cols-3 gap-6 mb-8">
-    <div class="card">
-      <div class="card-header"><h3 class="font-bold">Recent Projects</h3></div>
-      <div class="card-body">
-        <div
-          hx-get="/api/v1/projects?limit=5"
-          hx-trigger="load"
-          hx-swap="innerHTML"
-        >
-          <div class="loading-spinner"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-header">
-      <h2 class="font-bold">Project List</h2>
-    </div>
-    <div class="card-body">
-      <div
-        id="project-list"
-        hx-get="/api/v1/projects?limit=1000"
-        hx-trigger="load"
-        hx-swap="innerHTML"
-      >
-        <div class="loading-spinner"></div>
-      </div>
-    </div>
+  <div
+    id="projects-grid"
+    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+    hx-get="/api/v1/projects?limit=1000"
+    hx-trigger="load"
+    hx-swap="innerHTML"
+  >
+    <div class="loading-spinner"></div>
   </div>
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  document.body.addEventListener("htmx:afterSwap", function (event) {
+    if (event.target.id === "projects-grid") {
+      try {
+        const data = JSON.parse(event.detail.xhr.responseText);
+        const items = Array.isArray(data) ? data : data.items || [];
+
+        if (items.length === 0) {
+          event.target.innerHTML = '<div class="col-span-full text-center py-12"><p class="text-gray-500 text-lg">No projects found</p></div>';
+          return;
+        }
+
+        let html = "";
+        items.forEach((project) => {
+          const statusColors = {
+            active: "bg-success text-white",
+            completed: "bg-gray-500 text-white",
+            on_hold: "bg-warning text-white",
+            cancelled: "bg-danger text-white",
+          };
+          const statusClass = statusColors[project.status] || "bg-gray-300 text-gray-700";
+
+          html += `
+            <div class="card card-accent hover:shadow-lg transition-shadow">
+              <div class="card-header">
+                <h3 class="text-lg font-bold text-gray-900">${project.name || "Untitled Project"}</h3>
+                <span class="badge ${statusClass}">${project.status || "unknown"}</span>
+              </div>
+              <div class="card-body">
+                ${project.description ? `<p class="text-gray-600 mb-4">${project.description}</p>` : ""}
+                <div class="space-y-2 text-sm">
+                  ${project.start_date ? `<div class="flex justify-between"><span class="text-gray-500">Start:</span><span class="font-medium">${new Date(project.start_date).toLocaleDateString()}</span></div>` : ""}
+                  ${project.end_date ? `<div class="flex justify-between"><span class="text-gray-500">End:</span><span class="font-medium">${new Date(project.end_date).toLocaleDateString()}</span></div>` : ""}
+                  ${project.budget !== null && project.budget !== undefined ? `<div class="flex justify-between"><span class="text-gray-500">Budget:</span><span class="font-medium">$${project.budget.toLocaleString()}</span></div>` : ""}
+                </div>
+              </div>
+            </div>
+          `;
+        });
+
+        event.target.innerHTML = html;
+      } catch (e) {
+        console.error("Error rendering projects:", e);
+        event.target.innerHTML = '<div class="col-span-full text-center py-12"><p class="text-red-500">Error loading projects</p></div>';
+      }
+    }
+  });
+</script>
 {% endblock %}
