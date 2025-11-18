@@ -1,7 +1,8 @@
 """
 Web UI routes for Task Planner.
 
-This module provides HTML page routes for the web interface.
+This module provides HTML page routes for the web interface with brand-specific
+template routing support.
 """
 
 from pathlib import Path
@@ -13,11 +14,41 @@ from fastapi.templating import Jinja2Templates
 
 from ...branding import BrandName, get_brand_config, get_brand_from_domain
 
-# Get the templates directory (multibrand contains common templates)
-templates_dir = Path(__file__).parent.parent.parent / "templates" / "multibrand"
-templates = Jinja2Templates(directory=str(templates_dir))
+# Get the templates base directory
+templates_base_dir = Path(__file__).parent.parent.parent / "templates"
+
+# Initialize Jinja2Templates with the base templates directory
+# This allows us to reference templates from any brand folder
+templates = Jinja2Templates(directory=str(templates_base_dir))
 
 router = APIRouter()
+
+
+def get_template_path(template_name: str, brand_name: BrandName) -> str:
+    """
+    Resolve template path with brand-specific fallback.
+
+    Implements the template routing chain:
+    1. Check brand-specific template: templates/{brand_name}/{template_name}
+    2. Fallback to multibrand: templates/multibrand/{template_name}
+
+    This allows brand-specific overrides when strong brandization is needed,
+    while defaulting to common templates for consistency.
+
+    Args:
+        template_name: Relative template path (e.g., "pages/dashboard.html")
+        brand_name: Brand name for routing
+
+    Returns:
+        Template path relative to templates directory
+    """
+    # Check for brand-specific template first
+    brand_template_path = templates_base_dir / brand_name / template_name
+    if brand_template_path.exists():
+        return f"{brand_name}/{template_name}"
+
+    # Fallback to multibrand template
+    return f"multibrand/{template_name}"
 
 
 def get_brand_context(request: Request) -> dict[str, Any]:
@@ -60,7 +91,8 @@ async def dashboard(request: Request) -> HTMLResponse:
     """Dashboard page - overview of system status."""
     context = get_brand_context(request)
     context["request"] = request
-    return templates.TemplateResponse("pages/dashboard.html", context)
+    template_path = get_template_path("pages/dashboard.html", context["brand_name"])
+    return templates.TemplateResponse(template_path, context)
 
 
 @router.get("/projects", response_class=HTMLResponse)
@@ -68,7 +100,8 @@ async def projects_list(request: Request) -> HTMLResponse:
     """Projects list page."""
     context = get_brand_context(request)
     context["request"] = request
-    return templates.TemplateResponse("pages/projects.html", context)
+    template_path = get_template_path("pages/projects.html", context["brand_name"])
+    return templates.TemplateResponse(template_path, context)
 
 
 @router.get("/projects/{project_id}", response_class=HTMLResponse)
@@ -77,7 +110,8 @@ async def project_detail(request: Request, project_id: int) -> HTMLResponse:
     context = get_brand_context(request)
     context["request"] = request
     context["project_id"] = project_id
-    return templates.TemplateResponse("pages/project_detail.html", context)
+    template_path = get_template_path("pages/project_detail.html", context["brand_name"])
+    return templates.TemplateResponse(template_path, context)
 
 
 @router.get("/tasks", response_class=HTMLResponse)
@@ -85,7 +119,8 @@ async def tasks_list(request: Request) -> HTMLResponse:
     """Tasks list page."""
     context = get_brand_context(request)
     context["request"] = request
-    return templates.TemplateResponse("pages/tasks.html", context)
+    template_path = get_template_path("pages/tasks.html", context["brand_name"])
+    return templates.TemplateResponse(template_path, context)
 
 
 @router.get("/resources", response_class=HTMLResponse)
@@ -93,7 +128,8 @@ async def resources_list(request: Request) -> HTMLResponse:
     """Resources list page."""
     context = get_brand_context(request)
     context["request"] = request
-    return templates.TemplateResponse("pages/resources.html", context)
+    template_path = get_template_path("pages/resources.html", context["brand_name"])
+    return templates.TemplateResponse(template_path, context)
 
 
 @router.get("/assignments", response_class=HTMLResponse)
@@ -101,7 +137,8 @@ async def assignments_list(request: Request) -> HTMLResponse:
     """Assignments list page."""
     context = get_brand_context(request)
     context["request"] = request
-    return templates.TemplateResponse("pages/assignments.html", context)
+    template_path = get_template_path("pages/assignments.html", context["brand_name"])
+    return templates.TemplateResponse(template_path, context)
 
 
 @router.get("/reports", response_class=HTMLResponse)
@@ -109,7 +146,8 @@ async def reports_page(request: Request) -> HTMLResponse:
     """Reports page."""
     context = get_brand_context(request)
     context["request"] = request
-    return templates.TemplateResponse("pages/reports.html", context)
+    template_path = get_template_path("pages/reports.html", context["brand_name"])
+    return templates.TemplateResponse(template_path, context)
 
 
 @router.get("/set-brand/{brand_name}")
