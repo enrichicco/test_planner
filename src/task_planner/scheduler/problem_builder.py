@@ -64,14 +64,14 @@ class ProblemBuilder:
             job_name = f"project_{project_id}" if project_id else "no_project"
 
             # Aggregate dates
-            job_release = 0
+            job_release = None
             job_deadline = MAX_VALUE
             job_due = None
 
             for task in project_tasks:
                 if task.start_date:
                     release_minutes = max(0, int((task.start_date - start_date).total_seconds() / 60))
-                    job_release = min(job_release or release_minutes, release_minutes)
+                    job_release = release_minutes if job_release is None else min(job_release, release_minutes)
 
                 if task.end_date:
                     deadline_minutes = int((task.end_date - start_date).total_seconds() / 60)
@@ -82,7 +82,7 @@ class ProblemBuilder:
 
             job = self.model.add_job(
                 name=job_name,
-                release_date=job_release,
+                release_date=job_release if job_release is not None else 0,
                 deadline=job_deadline,
                 due_date=job_due,
             )
