@@ -113,10 +113,6 @@ class ProblemBuilder:
 
                 self.task_mapping[task.task_id] = pj_task
 
-        # Add precedence constraints (if your a2rp schema supports task dependencies)
-        # Note: The current a2rp schema doesn't have predecessor_id,
-        # but you could add it via task_link table if needed
-
         return self.model
 
     def get_task_id(self, pyjobshop_idx: int) -> Optional[int]:
