@@ -1,0 +1,42 @@
+{% extends "base.html" %} {% block title %}Resources{% endblock %} {% block
+content %}
+<div class="page-container">
+  <header class="page-header">
+    <div>
+      <h1 class="page-title">Resources</h1>
+      <p class="text-gray-600">Manage and review resources</p>
+    </div>
+  </header>
+
+  <div class="grid grid-cols-3 gap-6 mb-8">
+    <div class="card">
+      <div class="card-header"><h3 class="font-bold">Recent Resources</h3></div>
+      <div class="card-body">
+        <div
+          hx-get="/api/v1/resources?limit=5"
+          hx-trigger="load"
+          hx-swap="innerHTML"
+        >
+          <div class="loading-spinner"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h2 class="text-xl font-bold">Resource List</h2>
+    </div>
+    <div class="card-body">
+      <div
+        id="resource-list"
+        hx-get="/api/v1/resources?limit=1000"
+        hx-trigger="load"
+        hx-swap="innerHTML"
+      >
+        <div class="loading-spinner"></div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

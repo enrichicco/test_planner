@@ -1,0 +1,42 @@
+{% extends "base.html" %} {% block title %}Tasks{% endblock %} {% block content
+%}
+<div class="page-container">
+  <header class="page-header">
+    <div>
+      <h1 class="page-title">Tasks</h1>
+      <p class="text-gray-600">Task list and quick overview</p>
+    </div>
+  </header>
+
+  <div class="grid grid-cols-3 gap-6 mb-8">
+    <div class="card">
+      <div class="card-header"><h3 class="font-bold">Recent Tasks</h3></div>
+      <div class="card-body">
+        <div
+          hx-get="/api/v1/tasks?limit=5"
+          hx-trigger="load"
+          hx-swap="innerHTML"
+        >
+          <div class="loading-spinner"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h2 class="text-xl font-bold">Task List</h2>
+    </div>
+    <div class="card-body">
+      <div
+        id="task-list"
+        hx-get="/api/v1/tasks?limit=1000"
+        hx-trigger="load"
+        hx-swap="innerHTML"
+      >
+        <div class="loading-spinner"></div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
