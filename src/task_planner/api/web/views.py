@@ -150,6 +150,15 @@ async def reports_page(request: Request) -> HTMLResponse:
     return templates.TemplateResponse(template_path, context)
 
 
+@router.get("/scheduler", response_class=HTMLResponse)
+async def scheduler_page(request: Request) -> HTMLResponse:
+    """Scheduler page - Generate schedules with PyJobShop."""
+    context = get_brand_context(request)
+    context["request"] = request
+    template_path = get_template_path("pages/scheduler.html", context["brand_name"])
+    return templates.TemplateResponse(template_path, context)
+
+
 @router.get("/set-brand/{brand_name}")
 async def set_brand(brand_name: BrandName, request: Request) -> RedirectResponse:
     """

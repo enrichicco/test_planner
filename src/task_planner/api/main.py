@@ -10,7 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from ..config import settings
-from .routers.a2rp import assignments, projects, reports, resources, tasks
+from .routers.a2rp import assignments, projects, reports, resources, scheduler, tasks
 from .web import router as web_router
 
 app = FastAPI(
@@ -38,6 +38,7 @@ app.include_router(tasks.router, prefix="/api/v1/tasks", tags=["Tasks"])
 app.include_router(resources.router, prefix="/api/v1/resources", tags=["Resources"])
 app.include_router(assignments.router, prefix="/api/v1/assignments", tags=["Assignments"])
 app.include_router(reports.router, prefix="/api/v1/reports", tags=["Reports"])
+app.include_router(scheduler.router, prefix="/api/v1/scheduler", tags=["Scheduler"])
 
 # Include web UI routes (must be last to allow API routes to take precedence)
 app.include_router(web_router)

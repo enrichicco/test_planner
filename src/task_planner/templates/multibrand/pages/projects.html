@@ -6,7 +6,24 @@ content %}
       <h1 class="page-title">Projects</h1>
       <p class="text-gray-600">Manage and track all your projects</p>
     </div>
+    <button class="btn btn-primary">+ New Project</button>
   </header>
+
+  <!-- Filters -->
+  <div class="card mb-6">
+    <div class="card-body">
+      <div class="flex gap-4 items-center">
+        <label class="text-sm font-medium text-gray-700">Filter by Status:</label>
+        <select id="project-status-filter" class="form-select" style="width: 200px;">
+          <option value="">All</option>
+          <option value="active">Active</option>
+          <option value="completed">Completed</option>
+          <option value="on_hold">On Hold</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+      </div>
+    </div>
+  </div>
 
   <div
     id="projects-grid"
@@ -22,51 +39,86 @@ content %}
 
 {% block extra_scripts %}
 <script>
+  let allProjects = [];
+
+  function renderProjects(projects) {
+    const grid = document.getElementById("projects-grid");
+
+    if (projects.length === 0) {
+      grid.innerHTML = '<div class="col-span-full text-center py-12"><p class="text-gray-500 text-lg">No projects found</p></div>';
+      return;
+    }
+
+    let html = "";
+    projects.forEach((project) => {
+      const statusColors = {
+        active: "bg-success text-white",
+        completed: "bg-gray-500 text-white",
+        on_hold: "bg-warning text-white",
+        cancelled: "bg-danger text-white",
+      };
+      const statusClass = statusColors[project.status] || "bg-gray-300 text-gray-700";
+
+      html += `
+        <div class="card card-accent hover:shadow-lg transition-shadow" data-status="${project.status || ''}">
+          <div class="card-header">
+            <h3 class="text-lg font-bold text-gray-900">${project.name || "Untitled Project"}</h3>
+            <span class="badge ${statusClass}">${project.status || "unknown"}</span>
+          </div>
+          <div class="card-body">
+            ${project.description ? `<p class="text-gray-600 mb-4">${project.description}</p>` : ""}
+            <div class="space-y-2 text-sm mb-4">
+              ${project.start_date ? `<div class="flex justify-between"><span class="text-gray-500">Start:</span><span class="font-medium">${new Date(project.start_date).toLocaleDateString()}</span></div>` : ""}
+              ${project.end_date ? `<div class="flex justify-between"><span class="text-gray-500">End:</span><span class="font-medium">${new Date(project.end_date).toLocaleDateString()}</span></div>` : ""}
+              ${project.budget !== null && project.budget !== undefined ? `<div class="flex justify-between"><span class="text-gray-500">Budget:</span><span class="font-medium">$${project.budget.toLocaleString()}</span></div>` : ""}
+            </div>
+            <div class="flex gap-2 pt-3 border-t border-gray-200">
+              <button class="btn btn-sm btn-secondary flex-1" onclick="editProject(${project.project_id})">
+                ✏️ Edit
+              </button>
+              <button class="btn btn-sm btn-danger" onclick="deleteProject(${project.project_id})">
+                🗑️ Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+
+    grid.innerHTML = html;
+  }
+
+  function filterProjects() {
+    const statusFilter = document.getElementById("project-status-filter").value;
+    const filtered = statusFilter
+      ? allProjects.filter(p => p.status === statusFilter)
+      : allProjects;
+    renderProjects(filtered);
+  }
+
   document.body.addEventListener("htmx:afterSwap", function (event) {
     if (event.target.id === "projects-grid") {
       try {
         const data = JSON.parse(event.detail.xhr.responseText);
-        const items = Array.isArray(data) ? data : data.items || [];
-
-        if (items.length === 0) {
-          event.target.innerHTML = '<div class="col-span-full text-center py-12"><p class="text-gray-500 text-lg">No projects found</p></div>';
-          return;
-        }
-
-        let html = "";
-        items.forEach((project) => {
-          const statusColors = {
-            active: "bg-success text-white",
-            completed: "bg-gray-500 text-white",
-            on_hold: "bg-warning text-white",
-            cancelled: "bg-danger text-white",
-          };
-          const statusClass = statusColors[project.status] || "bg-gray-300 text-gray-700";
-
-          html += `
-            <div class="card card-accent hover:shadow-lg transition-shadow">
-              <div class="card-header">
-                <h3 class="text-lg font-bold text-gray-900">${project.name || "Untitled Project"}</h3>
-                <span class="badge ${statusClass}">${project.status || "unknown"}</span>
-              </div>
-              <div class="card-body">
-                ${project.description ? `<p class="text-gray-600 mb-4">${project.description}</p>` : ""}
-                <div class="space-y-2 text-sm">
-                  ${project.start_date ? `<div class="flex justify-between"><span class="text-gray-500">Start:</span><span class="font-medium">${new Date(project.start_date).toLocaleDateString()}</span></div>` : ""}
-                  ${project.end_date ? `<div class="flex justify-between"><span class="text-gray-500">End:</span><span class="font-medium">${new Date(project.end_date).toLocaleDateString()}</span></div>` : ""}
-                  ${project.budget !== null && project.budget !== undefined ? `<div class="flex justify-between"><span class="text-gray-500">Budget:</span><span class="font-medium">$${project.budget.toLocaleString()}</span></div>` : ""}
-                </div>
-              </div>
-            </div>
-          `;
-        });
-
-        event.target.innerHTML = html;
+        allProjects = Array.isArray(data) ? data : data.items || [];
+        renderProjects(allProjects);
       } catch (e) {
         console.error("Error rendering projects:", e);
         event.target.innerHTML = '<div class="col-span-full text-center py-12"><p class="text-red-500">Error loading projects</p></div>';
       }
     }
   });
+
+  document.getElementById("project-status-filter")?.addEventListener("change", filterProjects);
+
+  function editProject(id) {
+    alert(`Edit project ${id} - Feature coming soon!`);
+  }
+
+  function deleteProject(id) {
+    if (confirm(`Are you sure you want to delete project ${id}?`)) {
+      alert(`Delete project ${id} - Feature coming soon!`);
+    }
+  }
 </script>
 {% endblock %}

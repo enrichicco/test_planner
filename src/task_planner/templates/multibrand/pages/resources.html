@@ -51,10 +51,18 @@ content %}
               </div>
               <div class="card-body">
                 ${resource.description ? `<p class="text-gray-600 mb-4">${resource.description}</p>` : ""}
-                <div class="space-y-2 text-sm">
+                <div class="space-y-2 text-sm mb-4">
                   ${resource.availability !== null && resource.availability !== undefined ? `<div class="flex justify-between"><span class="text-gray-500">Availability:</span><span class="font-medium">${resource.availability}%</span></div>` : ""}
                   ${resource.cost_per_hour ? `<div class="flex justify-between"><span class="text-gray-500">Cost/Hour:</span><span class="font-medium">$${resource.cost_per_hour}</span></div>` : ""}
                   ${resource.capacity ? `<div class="flex justify-between"><span class="text-gray-500">Capacity:</span><span class="font-medium">${resource.capacity}</span></div>` : ""}
+                </div>
+                <div class="flex gap-2 pt-3 border-t border-gray-200">
+                  <button class="btn btn-sm btn-secondary flex-1" onclick="editResource(${resource.resource_id})">
+                    ✏️ Edit
+                  </button>
+                  <button class="btn btn-sm btn-danger" onclick="deleteResource(${resource.resource_id})">
+                    🗑️ Delete
+                  </button>
                 </div>
               </div>
             </div>
@@ -68,5 +76,15 @@ content %}
       }
     }
   });
+
+  function editResource(id) {
+    alert(`Edit resource ${id} - Feature coming soon!`);
+  }
+
+  function deleteResource(id) {
+    if (confirm(`Are you sure you want to delete resource ${id}?`)) {
+      alert(`Delete resource ${id} - Feature coming soon!`);
+    }
+  }
 </script>
 {% endblock %}

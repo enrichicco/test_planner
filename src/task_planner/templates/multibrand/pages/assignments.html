@@ -50,12 +50,20 @@ content %}
                 <span class="badge ${statusClass}">${assignment.status || "pending"}</span>
               </div>
               <div class="card-body">
-                <div class="space-y-2 text-sm">
+                <div class="space-y-2 text-sm mb-4">
                   ${assignment.task_name ? `<div class="flex justify-between"><span class="text-gray-500">Task:</span><span class="font-medium">${assignment.task_name}</span></div>` : ""}
                   ${assignment.resource_name ? `<div class="flex justify-between"><span class="text-gray-500">Resource:</span><span class="font-medium">${assignment.resource_name}</span></div>` : ""}
                   ${assignment.allocated_hours ? `<div class="flex justify-between"><span class="text-gray-500">Hours:</span><span class="font-medium">${assignment.allocated_hours}h</span></div>` : ""}
                   ${assignment.start_date ? `<div class="flex justify-between"><span class="text-gray-500">Start:</span><span class="font-medium">${new Date(assignment.start_date).toLocaleDateString()}</span></div>` : ""}
                   ${assignment.end_date ? `<div class="flex justify-between"><span class="text-gray-500">End:</span><span class="font-medium">${new Date(assignment.end_date).toLocaleDateString()}</span></div>` : ""}
+                </div>
+                <div class="flex gap-2 pt-3 border-t border-gray-200">
+                  <button class="btn btn-sm btn-secondary flex-1" onclick="editAssignment(${assignment.assignment_id || assignment.id})">
+                    ✏️ Edit
+                  </button>
+                  <button class="btn btn-sm btn-danger" onclick="deleteAssignment(${assignment.assignment_id || assignment.id})">
+                    🗑️ Delete
+                  </button>
                 </div>
               </div>
             </div>
@@ -69,5 +77,15 @@ content %}
       }
     }
   });
+
+  function editAssignment(id) {
+    alert(`Edit assignment ${id} - Feature coming soon!`);
+  }
+
+  function deleteAssignment(id) {
+    if (confirm(`Are you sure you want to delete assignment ${id}?`)) {
+      alert(`Delete assignment ${id} - Feature coming soon!`);
+    }
+  }
 </script>
 {% endblock %}
