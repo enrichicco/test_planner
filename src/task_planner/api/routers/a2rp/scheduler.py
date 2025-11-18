@@ -62,9 +62,9 @@ async def generate_schedule(
     assignment_service = AssignmentService(db)
 
     # Fetch all tasks and resources
-    tasks = task_service.get_all_tasks()
-    resources = resource_service.get_all_resources()
-    existing_assignments = assignment_service.get_all_assignments()
+    tasks = task_service.list_tasks()
+    resources = resource_service.list_resources()
+    existing_assignments = assignment_service.list_assignments()
 
     # Create scheduler engine
     engine = SchedulerEngine(
@@ -89,8 +89,7 @@ async def generate_schedule(
             "resource_id": a.resource_id,
             "start_date": a.start_date.isoformat() if a.start_date else None,
             "end_date": a.end_date.isoformat() if a.end_date else None,
-            "allocated_hours": float(a.allocated_hours) if a.allocated_hours else None,
-            "status": a.status if hasattr(a, "status") else "scheduled",
+            "status": a.wp_status_id,
         }
         for a in new_assignments
     ]
