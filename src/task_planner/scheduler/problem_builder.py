@@ -70,7 +70,7 @@ class ProblemBuilder:
 
             for task in project_tasks:
                 if task.start_date:
-                    release_minutes = int((task.start_date - start_date).total_seconds() / 60)
+                    release_minutes = max(0, int((task.start_date - start_date).total_seconds() / 60))
                     job_release = min(job_release or release_minutes, release_minutes)
 
                 if task.end_date:
@@ -92,7 +92,7 @@ class ProblemBuilder:
                 duration = int((task.work or 8.0) * 60)
 
                 earliest_start = (
-                    int((task.start_date - start_date).total_seconds() / 60)
+                    max(0, int((task.start_date - start_date).total_seconds() / 60))
                     if task.start_date
                     else 0
                 )
