@@ -1,5 +1,5 @@
-{% extends "multibrand/base.html" %} {% block title %}Scheduler{% endblock %} {% block
-content %}
+{% extends "multibrand/base.html" %} {% block title %}Scheduler{% endblock %} {%
+block content %}
 <div class="page-container">
   <header class="page-header">
     <div>
@@ -12,39 +12,68 @@ content %}
     <!-- Configuration Panel -->
     <div class="card col-span-1">
       <div class="card-header">
-        <h3 class="font-bold">Configuration</h3>
+        <h3 class="font-bold">Configurazione</h3>
       </div>
       <div class="card-body">
-        <form id="schedule-form" class="space-y-4">
+        <form
+          id="schedule-form"
+          class="space-y-4"
+        >
           <div class="form-group">
-            <label class="form-label">Start Date</label>
-            <input type="date" id="start-date" class="form-input" required />
+            <label class="form-label">Data inizio</label>
+            <input
+              type="date"
+              id="start-date"
+              class="form-input"
+              required
+            />
           </div>
 
           <div class="form-group">
-            <label class="form-label">End Date</label>
-            <input type="date" id="end-date" class="form-input" required />
+            <label class="form-label">Data fine</label>
+            <input
+              type="date"
+              id="end-date"
+              class="form-input"
+              required
+            />
           </div>
 
           <div class="form-group">
-            <label class="form-label">Solver</label>
-            <select id="solver" class="form-select">
+            <label class="form-label">Risolutore</label>
+            <select
+              id="solver"
+              class="form-select"
+            >
               <option value="ortools">OR-Tools</option>
               <option value="cpoptimizer">CP Optimizer</option>
             </select>
           </div>
 
           <div class="form-group">
-            <label class="form-label">Time Limit (seconds)</label>
-            <input type="number" id="time-limit" class="form-input" value="60" min="1" max="600" />
+            <label class="form-label">Tempo limite (secondi)</label>
+            <input
+              type="number"
+              id="time-limit"
+              class="form-input"
+              value="60"
+              min="1"
+              max="600"
+            />
           </div>
 
-          <button type="submit" class="btn btn-primary w-full">
-            Generate Schedule
+          <button
+            type="submit"
+            class="btn btn-primary w-full"
+          >
+            Genera
           </button>
         </form>
 
-        <div id="schedule-status" class="mt-4"></div>
+        <div
+          id="schedule-status"
+          class="mt-4"
+        ></div>
       </div>
     </div>
 
@@ -56,7 +85,7 @@ content %}
       <div class="card-body">
         <div id="schedule-results">
           <p class="text-gray-500 text-center py-12">
-            Configure settings and click "Generate Schedule" to begin
+            Configura le impostazioni e poi clicca "Genera" per iniziare
           </p>
         </div>
       </div>
@@ -64,17 +93,28 @@ content %}
   </div>
 
   <!-- Metadata Panel -->
-  <div class="card mt-6" id="metadata-panel" style="display: none;">
+  <div
+    class="card mt-6"
+    id="metadata-panel"
+    style="display: none"
+  >
     <div class="card-header">
       <h3 class="font-bold">Schedule Metadata</h3>
     </div>
     <div class="card-body">
-      <div id="schedule-metadata" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
+      <div
+        id="schedule-metadata"
+        class="grid grid-cols-2 md:grid-cols-4 gap-4"
+      ></div>
     </div>
   </div>
 
   <!-- Exceptions Panel -->
-  <div class="card mt-6" id="exceptions-panel" style="display: none;">
+  <div
+    class="card mt-6"
+    id="exceptions-panel"
+    style="display: none"
+  >
     <div class="card-header">
       <h3 class="font-bold">Exceptions & Warnings</h3>
     </div>
@@ -83,9 +123,7 @@ content %}
     </div>
   </div>
 </div>
-{% endblock %}
-
-{% block extra_scripts %}
+{% endblock %} {% block extra_scripts %}
 <script>
   // Set default dates
   const today = new Date();
@@ -95,80 +133,99 @@ content %}
   document.getElementById("start-date").valueAsDate = today;
   document.getElementById("end-date").valueAsDate = nextMonth;
 
-  document.getElementById("schedule-form").addEventListener("submit", async function(e) {
-    e.preventDefault();
+  document
+    .getElementById("schedule-form")
+    .addEventListener("submit", async function (e) {
+      e.preventDefault();
 
-    const startDate = document.getElementById("start-date").value;
-    const endDate = document.getElementById("end-date").value;
-    const solver = document.getElementById("solver").value;
-    const timeLimit = parseInt(document.getElementById("time-limit").value);
+      const startDate = document.getElementById("start-date").value;
+      const endDate = document.getElementById("end-date").value;
+      const solver = document.getElementById("solver").value;
+      const timeLimit = parseInt(document.getElementById("time-limit").value);
 
-    const statusDiv = document.getElementById("schedule-status");
-    statusDiv.innerHTML = '<div class="loading-spinner"></div><p class="text-sm text-gray-600 mt-2">Generating schedule...</p>';
+      const statusDiv = document.getElementById("schedule-status");
+      statusDiv.innerHTML =
+        '<div class="loading-spinner"></div><p class="text-sm text-gray-600 mt-2">Generating schedule...</p>';
 
-    try {
-      const response = await fetch("/api/v1/scheduler/generate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          start_date: startDate,
-          end_date: endDate,
-          solver: solver,
-          time_limit: timeLimit,
-        }),
-      });
+      try {
+        const response = await fetch("/api/v1/scheduler/generate", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            start_date: startDate,
+            end_date: endDate,
+            solver: solver,
+            time_limit: timeLimit,
+          }),
+        });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        // Display results
+        displayScheduleResults(data.assignments || []);
+        displayMetadata(data.metadata || {});
+        displayExceptions(data.exceptions || []);
+
+        statusDiv.innerHTML =
+          '<p class="text-success font-medium">✓ Schedule generated successfully!</p>';
+      } catch (error) {
+        console.error("Error generating schedule:", error);
+        statusDiv.innerHTML = `<p class="text-danger font-medium">✗ Error: ${error.message}</p>`;
       }
-
-      const data = await response.json();
-
-      // Display results
-      displayScheduleResults(data.assignments || []);
-      displayMetadata(data.metadata || {});
-      displayExceptions(data.exceptions || []);
-
-      statusDiv.innerHTML = '<p class="text-success font-medium">✓ Schedule generated successfully!</p>';
-    } catch (error) {
-      console.error("Error generating schedule:", error);
-      statusDiv.innerHTML = `<p class="text-danger font-medium">✗ Error: ${error.message}</p>`;
-    }
-  });
+    });
 
   function displayScheduleResults(assignments) {
     const resultsDiv = document.getElementById("schedule-results");
 
     if (assignments.length === 0) {
-      resultsDiv.innerHTML = '<p class="text-gray-500 text-center py-8">No assignments generated</p>';
+      resultsDiv.innerHTML =
+        '<p class="text-gray-500 text-center py-8">No assignments generated</p>';
       return;
     }
 
     let html = '<div class="space-y-3">';
     assignments.forEach((assignment, index) => {
-      const startDate = assignment.start_date ? new Date(assignment.start_date).toLocaleDateString() : "N/A";
-      const endDate = assignment.end_date ? new Date(assignment.end_date).toLocaleDateString() : "N/A";
+      const startDate = assignment.start_date
+        ? new Date(assignment.start_date).toLocaleDateString()
+        : "N/A";
+      const endDate = assignment.end_date
+        ? new Date(assignment.end_date).toLocaleDateString()
+        : "N/A";
 
       html += `
         <div class="p-4 border border-gray-200 rounded hover:bg-gray-50">
           <div class="flex justify-between items-start mb-2">
             <div>
-              <div class="font-bold text-gray-900">Assignment #${index + 1}</div>
-              <div class="text-sm text-gray-600">Task ID: ${assignment.task_id || "N/A"} | Resource ID: ${assignment.resource_id || "N/A"}</div>
+              <div class="font-bold text-gray-900">Assignment #${
+                index + 1
+              }</div>
+              <div class="text-sm text-gray-600">Task ID: ${
+                assignment.task_id || "N/A"
+              } | Resource ID: ${assignment.resource_id || "N/A"}</div>
             </div>
-            <span class="badge badge-primary">${assignment.status || "scheduled"}</span>
+            <span class="badge badge-primary">${
+              assignment.status || "scheduled"
+            }</span>
           </div>
           <div class="grid grid-cols-2 gap-2 text-sm">
             <div><span class="text-gray-500">Start:</span> <span class="font-medium">${startDate}</span></div>
             <div><span class="text-gray-500">End:</span> <span class="font-medium">${endDate}</span></div>
-            ${assignment.allocated_hours ? `<div class="col-span-2"><span class="text-gray-500">Hours:</span> <span class="font-medium">${assignment.allocated_hours}h</span></div>` : ""}
+            ${
+              assignment.allocated_hours
+                ? `<div class="col-span-2"><span class="text-gray-500">Hours:</span> <span class="font-medium">${assignment.allocated_hours}h</span></div>`
+                : ""
+            }
           </div>
         </div>
       `;
     });
-    html += '</div>';
+    html += "</div>";
 
     resultsDiv.innerHTML = html;
   }
@@ -186,7 +243,9 @@ content %}
 
     let html = "";
     for (const [key, value] of Object.entries(metadata)) {
-      const label = key.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
+      const label = key
+        .replace(/_/g, " ")
+        .replace(/\b\w/g, l => l.toUpperCase());
       html += `
         <div class="p-3 bg-gray-50 rounded">
           <div class="text-xs text-gray-500 uppercase">${label}</div>
@@ -210,27 +269,34 @@ content %}
     panel.style.display = "block";
 
     let html = '<div class="space-y-2">';
-    exceptions.forEach((exc) => {
+    exceptions.forEach(exc => {
       const severityColors = {
         error: "bg-danger text-white",
         warning: "bg-warning text-white",
         info: "bg-info text-white",
       };
-      const badgeClass = severityColors[exc.severity] || "bg-gray-400 text-white";
+      const badgeClass =
+        severityColors[exc.severity] || "bg-gray-400 text-white";
 
       html += `
-        <div class="p-3 border-l-4 ${exc.severity === 'error' ? 'border-danger' : 'border-warning'} bg-gray-50">
+        <div class="p-3 border-l-4 ${
+          exc.severity === "error" ? "border-danger" : "border-warning"
+        } bg-gray-50">
           <div class="flex items-start gap-2">
-            <span class="badge badge-sm ${badgeClass}">${exc.severity || "info"}</span>
+            <span class="badge badge-sm ${badgeClass}">${
+        exc.severity || "info"
+      }</span>
             <div>
               <div class="font-medium">${exc.type || "EXCEPTION"}</div>
-              <div class="text-sm text-gray-700">${exc.message || "No message"}</div>
+              <div class="text-sm text-gray-700">${
+                exc.message || "No message"
+              }</div>
             </div>
           </div>
         </div>
       `;
     });
-    html += '</div>';
+    html += "</div>";
 
     exceptionsDiv.innerHTML = html;
   }

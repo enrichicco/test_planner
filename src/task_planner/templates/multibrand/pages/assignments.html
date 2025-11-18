@@ -1,5 +1,5 @@
-{% extends "multibrand/base.html" %} {% block title %}Assignments{% endblock %} {% block
-content %}
+{% extends "multibrand/base.html" %} {% block title %}Assignments{% endblock %}
+{% block content %}
 <div class="page-container">
   <header class="page-header">
     <div>
@@ -18,9 +18,7 @@ content %}
     <div class="loading-spinner"></div>
   </div>
 </div>
-{% endblock %}
-
-{% block extra_scripts %}
+{% endblock %} {% block extra_scripts %}
 <script>
   document.body.addEventListener("htmx:afterSwap", function (event) {
     if (event.target.id === "assignments-grid") {
@@ -29,39 +27,73 @@ content %}
         const items = Array.isArray(data) ? data : data.items || [];
 
         if (items.length === 0) {
-          event.target.innerHTML = '<div class="col-span-full text-center py-12"><p class="text-gray-500 text-lg">No assignments found</p></div>';
+          event.target.innerHTML =
+            '<div class="col-span-full text-center py-12"><p class="text-gray-500 text-lg">No assignments found</p></div>';
           return;
         }
 
         let html = "";
-        items.forEach((assignment) => {
+        items.forEach(assignment => {
           const statusColors = {
             active: "bg-success text-white",
             pending: "bg-warning text-white",
             completed: "bg-gray-500 text-white",
             cancelled: "bg-danger text-white",
           };
-          const statusClass = statusColors[assignment.status] || "bg-gray-400 text-white";
+          const statusClass =
+            statusColors[assignment.status] || "bg-gray-400 text-white";
 
           html += `
             <div class="card card-accent hover:shadow-lg transition-shadow">
               <div class="card-header">
-                <h3 class="text-lg font-bold text-gray-900">Assignment #${assignment.id || "N/A"}</h3>
-                <span class="badge ${statusClass}">${assignment.status || "pending"}</span>
+                <h3 class="text-lg font-bold text-gray-900">Assignment #${
+                  assignment.id || "N/A"
+                }</h3>
+                <span class="badge ${statusClass}">${
+            assignment.status || "pending"
+          }</span>
               </div>
               <div class="card-body">
                 <div class="space-y-2 text-sm mb-4">
-                  ${assignment.task_name ? `<div class="flex justify-between"><span class="text-gray-500">Task:</span><span class="font-medium">${assignment.task_name}</span></div>` : ""}
-                  ${assignment.resource_name ? `<div class="flex justify-between"><span class="text-gray-500">Resource:</span><span class="font-medium">${assignment.resource_name}</span></div>` : ""}
-                  ${assignment.allocated_hours ? `<div class="flex justify-between"><span class="text-gray-500">Hours:</span><span class="font-medium">${assignment.allocated_hours}h</span></div>` : ""}
-                  ${assignment.start_date ? `<div class="flex justify-between"><span class="text-gray-500">Start:</span><span class="font-medium">${new Date(assignment.start_date).toLocaleDateString()}</span></div>` : ""}
-                  ${assignment.end_date ? `<div class="flex justify-between"><span class="text-gray-500">End:</span><span class="font-medium">${new Date(assignment.end_date).toLocaleDateString()}</span></div>` : ""}
+                  ${
+                    assignment.task_name
+                      ? `<div class="flex justify-between"><span class="text-gray-500">Task:</span><span class="font-medium">${assignment.task_name}</span></div>`
+                      : ""
+                  }
+                  ${
+                    assignment.resource_name
+                      ? `<div class="flex justify-between"><span class="text-gray-500">Resource:</span><span class="font-medium">${assignment.resource_name}</span></div>`
+                      : ""
+                  }
+                  ${
+                    assignment.allocated_hours
+                      ? `<div class="flex justify-between"><span class="text-gray-500">Hours:</span><span class="font-medium">${assignment.allocated_hours}h</span></div>`
+                      : ""
+                  }
+                  ${
+                    assignment.start_date
+                      ? `<div class="flex justify-between"><span class="text-gray-500">Start:</span><span class="font-medium">${new Date(
+                          assignment.start_date
+                        ).toLocaleDateString()}</span></div>`
+                      : ""
+                  }
+                  ${
+                    assignment.end_date
+                      ? `<div class="flex justify-between"><span class="text-gray-500">End:</span><span class="font-medium">${new Date(
+                          assignment.end_date
+                        ).toLocaleDateString()}</span></div>`
+                      : ""
+                  }
                 </div>
                 <div class="flex gap-2 pt-3 border-t border-gray-200">
-                  <button class="btn btn-sm btn-secondary flex-1" onclick="editAssignment(${assignment.assignment_id || assignment.id})">
+                  <button class="btn btn-sm btn-secondary flex-1" onclick="editAssignment(${
+                    assignment.assignment_id || assignment.id
+                  })">
                     ✏️ Edit
                   </button>
-                  <button class="btn btn-sm btn-danger" onclick="deleteAssignment(${assignment.assignment_id || assignment.id})">
+                  <button class="btn btn-sm btn-danger" onclick="deleteAssignment(${
+                    assignment.assignment_id || assignment.id
+                  })">
                     🗑️ Delete
                   </button>
                 </div>
@@ -73,7 +105,8 @@ content %}
         event.target.innerHTML = html;
       } catch (e) {
         console.error("Error rendering assignments:", e);
-        event.target.innerHTML = '<div class="col-span-full text-center py-12"><p class="text-red-500">Error loading assignments</p></div>';
+        event.target.innerHTML =
+          '<div class="col-span-full text-center py-12"><p class="text-red-500">Error loading assignments</p></div>';
       }
     }
   });

@@ -1,5 +1,5 @@
-{% extends "multibrand/base.html" %} {% block title %}Tasks{% endblock %} {% block content
-%}
+{% extends "multibrand/base.html" %} {% block title %}Tasks{% endblock %} {%
+block content %}
 <div class="page-container">
   <header class="page-header">
     <div>
@@ -14,23 +14,17 @@
     <div class="card-body">
       <div class="flex gap-4 items-center flex-wrap">
         <div class="flex gap-2 items-center">
-          <label class="text-sm font-medium text-gray-700">Status:</label>
-          <select id="task-status-filter" class="form-select" style="width: 200px;">
-            <option value="">All</option>
-            <option value="pending">Pending</option>
-            <option value="in_progress">In Progress</option>
-            <option value="completed">Completed</option>
-            <option value="blocked">Blocked</option>
-            <option value="cancelled">Cancelled</option>
-          </select>
-        </div>
-        <div class="flex gap-2 items-center">
-          <label class="text-sm font-medium text-gray-700">Priority:</label>
-          <select id="task-priority-filter" class="form-select" style="width: 150px;">
-            <option value="">All</option>
-            <option value="low">Low</option>
-            <option value="medium">Medium</option>
-            <option value="high">High</option>
+          <label class="text-sm font-medium text-gray-700">Stato:</label>
+          <select
+            id="task-status-filter"
+            class="form-select"
+            style="width: 200px"
+          >
+            <option value="">Tutti</option>
+            <option value="1">Completato</option>
+            <option value="2">???</option>
+            <option value="3">Puntuale</option>
+            <option value="4">Non specificato</option>
           </select>
         </div>
       </div>
@@ -47,9 +41,7 @@
     <div class="loading-spinner"></div>
   </div>
 </div>
-{% endblock %}
-
-{% block extra_scripts %}
+{% endblock %} {% block extra_scripts %}
 <script>
   let allTasks = [];
 
@@ -57,12 +49,13 @@
     const grid = document.getElementById("tasks-grid");
 
     if (tasks.length === 0) {
-      grid.innerHTML = '<div class="col-span-full text-center py-12"><p class="text-gray-500 text-lg">No tasks found</p></div>';
+      grid.innerHTML =
+        '<div class="col-span-full text-center py-12"><p class="text-gray-500 text-lg">No tasks found</p></div>';
       return;
     }
 
     let html = "";
-    tasks.forEach((task) => {
+    tasks.forEach(task => {
       const statusColors = {
         pending: "bg-gray-400 text-white",
         in_progress: "bg-info text-white",
@@ -70,34 +63,55 @@
         blocked: "bg-danger text-white",
         cancelled: "bg-gray-500 text-white",
       };
-      const statusClass = statusColors[task.status] || "bg-gray-300 text-gray-700";
-
-      const priorityColors = {
-        low: "text-gray-500",
-        medium: "text-warning",
-        high: "text-danger",
-      };
-      const priorityClass = priorityColors[task.priority] || "text-gray-500";
+      const statusClass =
+        statusColors[task.status] || "bg-gray-300 text-gray-700";
 
       html += `
-        <div class="card card-accent hover:shadow-lg transition-shadow" data-status="${task.status || ''}" data-priority="${task.priority || ''}">
+        <div class="card card-accent hover:shadow-lg transition-shadow" data-status="${
+          task.status || ""
+        }">
           <div class="card-header">
-            <h3 class="text-lg font-bold text-gray-900">${task.name || task.description || "Untitled Task"}</h3>
-            <span class="badge ${statusClass}">${task.status || "pending"}</span>
+            <h3 class="text-lg font-bold text-gray-900">${
+              task.name || task.description || "Untitled Task"
+            }</h3>
+            <span class="badge ${statusClass}">${
+        task.status || "pending"
+      }</span>
           </div>
           <div class="card-body">
-            ${task.description && task.name !== task.description ? `<p class="text-gray-600 mb-4">${task.description}</p>` : ""}
+            ${
+              task.description && task.name !== task.description
+                ? `<p class="text-gray-600 mb-4">${task.description}</p>`
+                : ""
+            }
             <div class="space-y-2 text-sm mb-4">
-              ${task.priority ? `<div class="flex justify-between"><span class="text-gray-500">Priority:</span><span class="font-medium ${priorityClass}">${task.priority.toUpperCase()}</span></div>` : ""}
-              ${task.estimated_hours ? `<div class="flex justify-between"><span class="text-gray-500">Est. Hours:</span><span class="font-medium">${task.estimated_hours}h</span></div>` : ""}
-              ${task.actual_hours ? `<div class="flex justify-between"><span class="text-gray-500">Actual Hours:</span><span class="font-medium">${task.actual_hours}h</span></div>` : ""}
-              ${task.deadline ? `<div class="flex justify-between"><span class="text-gray-500">Deadline:</span><span class="font-medium">${new Date(task.deadline).toLocaleDateString()}</span></div>` : ""}
+              ${
+                task.estimated_hours
+                  ? `<div class="flex justify-between"><span class="text-gray-500">Est. Hours:</span><span class="font-medium">${task.estimated_hours}h</span></div>`
+                  : ""
+              }
+              ${
+                task.actual_hours
+                  ? `<div class="flex justify-between"><span class="text-gray-500">Actual Hours:</span><span class="font-medium">${task.actual_hours}h</span></div>`
+                  : ""
+              }
+              ${
+                task.deadline
+                  ? `<div class="flex justify-between"><span class="text-gray-500">Deadline:</span><span class="font-medium">${new Date(
+                      task.deadline
+                    ).toLocaleDateString()}</span></div>`
+                  : ""
+              }
             </div>
             <div class="flex gap-2 pt-3 border-t border-gray-200">
-              <button class="btn btn-sm btn-secondary flex-1" onclick="editTask(${task.task_id})">
+              <button class="btn btn-sm btn-secondary flex-1" onclick="editTask(${
+                task.task_id
+              })">
                 ✏️ Edit
               </button>
-              <button class="btn btn-sm btn-danger" onclick="deleteTask(${task.task_id})">
+              <button class="btn btn-sm btn-danger" onclick="deleteTask(${
+                task.task_id
+              })">
                 🗑️ Delete
               </button>
             </div>
@@ -110,15 +124,14 @@
   }
 
   function filterTasks() {
-    const statusFilter = document.getElementById("task-status-filter").value;
-    const priorityFilter = document.getElementById("task-priority-filter").value;
+    const statusFilter = parseInt(
+      document.getElementById("task-status-filter").value,
+      10
+    );
 
     let filtered = allTasks;
     if (statusFilter) {
-      filtered = filtered.filter(t => t.status === statusFilter);
-    }
-    if (priorityFilter) {
-      filtered = filtered.filter(t => t.priority === priorityFilter);
+      filtered = filtered.filter(t => t.task_status_id === statusFilter);
     }
     renderTasks(filtered);
   }
@@ -131,13 +144,15 @@
         renderTasks(allTasks);
       } catch (e) {
         console.error("Error rendering tasks:", e);
-        event.target.innerHTML = '<div class="col-span-full text-center py-12"><p class="text-red-500">Error loading tasks</p></div>';
+        event.target.innerHTML =
+          '<div class="col-span-full text-center py-12"><p class="text-red-500">Error loading tasks</p></div>';
       }
     }
   });
 
-  document.getElementById("task-status-filter")?.addEventListener("change", filterTasks);
-  document.getElementById("task-priority-filter")?.addEventListener("change", filterTasks);
+  document
+    .getElementById("task-status-filter")
+    ?.addEventListener("change", filterTasks);
 
   function editTask(id) {
     alert(`Edit task ${id} - Feature coming soon!`);

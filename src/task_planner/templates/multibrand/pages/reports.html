@@ -1,5 +1,5 @@
-{% extends "multibrand/base.html" %} {% block title %}Reports{% endblock %} {% block
-content %}
+{% extends "multibrand/base.html" %} {% block title %}Reports{% endblock %} {%
+block content %}
 <div class="page-container">
   <header class="page-header">
     <div>
@@ -82,9 +82,7 @@ content %}
     </div>
   </div>
 </div>
-{% endblock %}
-
-{% block extra_scripts %}
+{% endblock %} {% block extra_scripts %}
 <script>
   document.body.addEventListener("htmx:afterSwap", function (event) {
     // Project Summary Report
@@ -93,10 +91,12 @@ content %}
         const data = JSON.parse(event.detail.xhr.responseText);
         let html = '<div class="space-y-3">';
         for (const [key, value] of Object.entries(data)) {
-          const label = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+          const label = key
+            .replace(/_/g, " ")
+            .replace(/\b\w/g, l => l.toUpperCase());
           html += `<div class="flex justify-between"><span class="text-gray-600">${label}:</span><span class="font-bold text-brand">${value}</span></div>`;
         }
-        html += '</div>';
+        html += "</div>";
         event.target.innerHTML = html;
       } catch (e) {
         console.error("Error rendering project summary:", e);
@@ -109,10 +109,12 @@ content %}
         const data = JSON.parse(event.detail.xhr.responseText);
         let html = '<div class="space-y-3">';
         for (const [key, value] of Object.entries(data)) {
-          const label = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+          const label = key
+            .replace(/_/g, " ")
+            .replace(/\b\w/g, l => l.toUpperCase());
           html += `<div class="flex justify-between"><span class="text-gray-600">${label}:</span><span class="font-bold text-brand">${value}</span></div>`;
         }
-        html += '</div>';
+        html += "</div>";
         event.target.innerHTML = html;
       } catch (e) {
         console.error("Error rendering task summary:", e);
@@ -126,13 +128,14 @@ content %}
         const items = Array.isArray(data) ? data : data.items || [];
 
         if (items.length === 0) {
-          event.target.innerHTML = '<p class="text-gray-500">No resource workload data</p>';
+          event.target.innerHTML =
+            '<p class="text-gray-500">No resource workload data</p>';
           return;
         }
 
         let html = '<div class="space-y-2">';
         items.slice(0, 10).forEach(item => {
-          const name = item.resource_name || item.name || 'Unknown';
+          const name = item.resource_name || item.name || "Unknown";
           const hours = item.total_hours || item.allocated_hours || 0;
           html += `
             <div class="p-2 border-b border-gray-100">
@@ -143,7 +146,7 @@ content %}
             </div>
           `;
         });
-        html += '</div>';
+        html += "</div>";
         event.target.innerHTML = html;
       } catch (e) {
         console.error("Error rendering resource workload:", e);
@@ -157,21 +160,22 @@ content %}
         const items = Array.isArray(data) ? data : data.items || [];
 
         if (items.length === 0) {
-          event.target.innerHTML = '<p class="text-gray-500">No assignments data</p>';
+          event.target.innerHTML =
+            '<p class="text-gray-500">No assignments data</p>';
           return;
         }
 
         let html = '<div class="space-y-2">';
         items.slice(0, 10).forEach(item => {
-          const taskName = item.task_name || 'Unknown Task';
-          const resourceName = item.resource_name || 'Unassigned';
-          const status = item.status || 'pending';
+          const taskName = item.task_name || "Unknown Task";
+          const resourceName = item.resource_name || "Unassigned";
+          const status = item.status || "pending";
           const statusColors = {
-            active: 'text-success',
-            pending: 'text-warning',
-            completed: 'text-gray-500'
+            active: "text-success",
+            pending: "text-warning",
+            completed: "text-gray-500",
           };
-          const statusClass = statusColors[status] || 'text-gray-500';
+          const statusClass = statusColors[status] || "text-gray-500";
 
           html += `
             <div class="p-2 border-b border-gray-100">
@@ -185,7 +189,7 @@ content %}
             </div>
           `;
         });
-        html += '</div>';
+        html += "</div>";
         event.target.innerHTML = html;
       } catch (e) {
         console.error("Error rendering assignments:", e);
@@ -199,16 +203,21 @@ content %}
         const items = Array.isArray(data) ? data : data.items || [];
 
         if (items.length === 0) {
-          event.target.innerHTML = '<p class="text-gray-500">No timeline data</p>';
+          event.target.innerHTML =
+            '<p class="text-gray-500">No timeline data</p>';
           return;
         }
 
         let html = '<div class="space-y-3">';
         items.forEach(item => {
-          const name = item.project_name || item.name || 'Unknown Project';
-          const startDate = item.start_date ? new Date(item.start_date).toLocaleDateString() : 'N/A';
-          const endDate = item.end_date ? new Date(item.end_date).toLocaleDateString() : 'N/A';
-          const status = item.status || 'unknown';
+          const name = item.project_name || item.name || "Unknown Project";
+          const startDate = item.start_date
+            ? new Date(item.start_date).toLocaleDateString()
+            : "N/A";
+          const endDate = item.end_date
+            ? new Date(item.end_date).toLocaleDateString()
+            : "N/A";
+          const status = item.status || "unknown";
 
           html += `
             <div class="p-3 border border-gray-200 rounded">
@@ -222,7 +231,7 @@ content %}
             </div>
           `;
         });
-        html += '</div>';
+        html += "</div>";
         event.target.innerHTML = html;
       } catch (e) {
         console.error("Error rendering project timeline:", e);

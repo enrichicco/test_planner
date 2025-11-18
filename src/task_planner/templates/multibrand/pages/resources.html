@@ -1,5 +1,5 @@
-{% extends "multibrand/base.html" %} {% block title %}Resources{% endblock %} {% block
-content %}
+{% extends "multibrand/base.html" %} {% block title %}Resources{% endblock %} {%
+block content %}
 <div class="page-container">
   <header class="page-header">
     <div>
@@ -18,9 +18,7 @@ content %}
     <div class="loading-spinner"></div>
   </div>
 </div>
-{% endblock %}
-
-{% block extra_scripts %}
+{% endblock %} {% block extra_scripts %}
 <script>
   document.body.addEventListener("htmx:afterSwap", function (event) {
     if (event.target.id === "resources-grid") {
@@ -29,38 +27,65 @@ content %}
         const items = Array.isArray(data) ? data : data.items || [];
 
         if (items.length === 0) {
-          event.target.innerHTML = '<div class="col-span-full text-center py-12"><p class="text-gray-500 text-lg">No resources found</p></div>';
+          event.target.innerHTML =
+            '<div class="col-span-full text-center py-12"><p class="text-gray-500 text-lg">No resources found</p></div>';
           return;
         }
 
         let html = "";
-        items.forEach((resource) => {
+        items.forEach(resource => {
           const typeColors = {
             person: "bg-info text-white",
             equipment: "bg-warning text-white",
             material: "bg-success text-white",
             facility: "bg-brand text-white",
           };
-          const typeClass = typeColors[resource.type] || "bg-gray-400 text-white";
+          const typeClass =
+            typeColors[resource.type] || "bg-gray-400 text-white";
 
           html += `
             <div class="card card-accent hover:shadow-lg transition-shadow">
               <div class="card-header">
-                <h3 class="text-lg font-bold text-gray-900">${resource.name || "Untitled Resource"}</h3>
-                <span class="badge ${typeClass}">${resource.type || "unknown"}</span>
+                <h3 class="text-lg font-bold text-gray-900">${
+                  resource.name || "Untitled Resource"
+                }</h3>
+                <span class="badge ${typeClass}">${
+            resource.type || "unknown"
+          }</span>
               </div>
               <div class="card-body">
-                ${resource.description ? `<p class="text-gray-600 mb-4">${resource.description}</p>` : ""}
+                ${
+                  resource.description
+                    ? `<p class="text-gray-600 mb-4">${resource.description}</p>`
+                    : ""
+                }
                 <div class="space-y-2 text-sm mb-4">
-                  ${resource.availability !== null && resource.availability !== undefined ? `<div class="flex justify-between"><span class="text-gray-500">Availability:</span><span class="font-medium">${resource.availability}%</span></div>` : ""}
-                  ${resource.cost_per_hour ? `<div class="flex justify-between"><span class="text-gray-500">Cost/Hour:</span><span class="font-medium">$${resource.cost_per_hour}</span></div>` : ""}
-                  ${resource.capacity ? `<div class="flex justify-between"><span class="text-gray-500">Capacity:</span><span class="font-medium">${resource.capacity}</span></div>` : ""}
+                  ${
+                    resource.availability !== null &&
+                    resource.availability !== undefined
+                      ? `<div class="flex justify-between"><span class="text-gray-500">Availability:</span><span class="font-medium">${resource.availability}%</span></div>`
+                      : ""
+                  }
+                  ${
+                    resource.cost_per_hour
+                      ? `<div class="flex justify-between"><span class="text-gray-500">Cost/Hour:</span><span class="font-medium">$${resource.cost_per_hour}</span></div>`
+                      : ""
+                  }
+                  ${
+                    resource.capacity
+                      ? `<div class="flex justify-between"><span class="text-gray-500">Capacity:</span><span class="font-medium">${resource.capacity}</span></div>`
+                      : ""
+                  }
                 </div>
                 <div class="flex gap-2 pt-3 border-t border-gray-200">
-                  <button class="btn btn-sm btn-secondary flex-1" onclick="editResource(${resource.resource_id})">
+                  <button class="btn btn-sm btn-secondary flex-1" onclick="editResource(${
+                    resource.resource_id
+                  })">
                     ✏️ Edit
                   </button>
-                  <button class="btn btn-sm btn-danger" onclick="deleteResource(${resource.resource_id})">
+                  <button class="btn btn-sm btn-danger" onclick="deleteResource(${
+                    resource.resource_id
+                  })">
                     🗑️ Delete
                   </button>
                 </div>
@@ -72,7 +97,8 @@ content %}
         event.target.innerHTML = html;
       } catch (e) {
         console.error("Error rendering resources:", e);
-        event.target.innerHTML = '<div class="col-span-full text-center py-12"><p class="text-red-500">Error loading resources</p></div>';
+        event.target.innerHTML =
+          '<div class="col-span-full text-center py-12"><p class="text-red-500">Error loading resources</p></div>';
       }
     }
   });

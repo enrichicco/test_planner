@@ -1,5 +1,5 @@
-{% extends "multibrand/base.html" %} {% block title %}Projects{% endblock %} {% block
-content %}
+{% extends "multibrand/base.html" %} {% block title %}Projects{% endblock %} {%
+block content %}
 <div class="page-container">
   <header class="page-header">
     <div>
@@ -13,13 +13,17 @@ content %}
   <div class="card mb-6">
     <div class="card-body">
       <div class="flex gap-4 items-center">
-        <label class="text-sm font-medium text-gray-700">Filter by Status:</label>
-        <select id="project-status-filter" class="form-select" style="width: 200px;">
-          <option value="">All</option>
-          <option value="active">Active</option>
-          <option value="completed">Completed</option>
-          <option value="on_hold">On Hold</option>
-          <option value="cancelled">Cancelled</option>
+        <label class="text-sm font-medium text-gray-700">Stato:</label>
+        <select
+          id="project-status-filter"
+          class="form-select"
+          style="width: 200px"
+        >
+          <option value="">Tutto</option>
+          <option value="1">Aperto</option>
+          <option value="2">Chiuso</option>
+          <option value="3">Rilasciato</option>
+          <option value="4">???</option>
         </select>
       </div>
     </div>
@@ -35,9 +39,7 @@ content %}
     <div class="loading-spinner"></div>
   </div>
 </div>
-{% endblock %}
-
-{% block extra_scripts %}
+{% endblock %} {% block extra_scripts %}
 <script>
   let allProjects = [];
 
@@ -45,38 +47,70 @@ content %}
     const grid = document.getElementById("projects-grid");
 
     if (projects.length === 0) {
-      grid.innerHTML = '<div class="col-span-full text-center py-12"><p class="text-gray-500 text-lg">No projects found</p></div>';
+      grid.innerHTML =
+        '<div class="col-span-full text-center py-12"><p class="text-gray-500 text-lg">No projects found</p></div>';
       return;
     }
 
     let html = "";
-    projects.forEach((project) => {
+    projects.forEach(project => {
       const statusColors = {
         active: "bg-success text-white",
         completed: "bg-gray-500 text-white",
         on_hold: "bg-warning text-white",
         cancelled: "bg-danger text-white",
       };
-      const statusClass = statusColors[project.status] || "bg-gray-300 text-gray-700";
+      const statusClass =
+        statusColors[project.status] || "bg-gray-300 text-gray-700";
 
       html += `
-        <div class="card card-accent hover:shadow-lg transition-shadow" data-status="${project.status || ''}">
+        <div class="card card-accent hover:shadow-lg transition-shadow" data-status="${
+          project.status || ""
+        }">
           <div class="card-header">
-            <h3 class="text-lg font-bold text-gray-900">${project.name || "Untitled Project"}</h3>
-            <span class="badge ${statusClass}">${project.status || "unknown"}</span>
+            <h3 class="text-lg font-bold text-gray-900">${
+              project.name || "Untitled Project"
+            }</h3>
+            <span class="badge ${statusClass}">${
+        project.status || "unknown"
+      }</span>
           </div>
           <div class="card-body">
-            ${project.description ? `<p class="text-gray-600 mb-4">${project.description}</p>` : ""}
+            ${
+              project.description
+                ? `<p class="text-gray-600 mb-4">${project.description}</p>`
+                : ""
+            }
             <div class="space-y-2 text-sm mb-4">
-              ${project.start_date ? `<div class="flex justify-between"><span class="text-gray-500">Start:</span><span class="font-medium">${new Date(project.start_date).toLocaleDateString()}</span></div>` : ""}
-              ${project.end_date ? `<div class="flex justify-between"><span class="text-gray-500">End:</span><span class="font-medium">${new Date(project.end_date).toLocaleDateString()}</span></div>` : ""}
-              ${project.budget !== null && project.budget !== undefined ? `<div class="flex justify-between"><span class="text-gray-500">Budget:</span><span class="font-medium">$${project.budget.toLocaleString()}</span></div>` : ""}
+              ${
+                project.start_date
+                  ? `<div class="flex justify-between"><span class="text-gray-500">Start:</span><span class="font-medium">${new Date(
+                      project.start_date
+                    ).toLocaleDateString()}</span></div>`
+                  : ""
+              }
+              ${
+                project.end_date
+                  ? `<div class="flex justify-between"><span class="text-gray-500">End:</span><span class="font-medium">${new Date(
+                      project.end_date
+                    ).toLocaleDateString()}</span></div>`
+                  : ""
+              }
+              ${
+                project.budget !== null && project.budget !== undefined
+                  ? `<div class="flex justify-between"><span class="text-gray-500">Budget:</span><span class="font-medium">$${project.budget.toLocaleString()}</span></div>`
+                  : ""
+              }
             </div>
             <div class="flex gap-2 pt-3 border-t border-gray-200">
-              <button class="btn btn-sm btn-secondary flex-1" onclick="editProject(${project.project_id})">
+              <button class="btn btn-sm btn-secondary flex-1" onclick="editProject(${
+                project.project_id
+              })">
                 ✏️ Edit
               </button>
-              <button class="btn btn-sm btn-danger" onclick="deleteProject(${project.project_id})">
+              <button class="btn btn-sm btn-danger" onclick="deleteProject(${
+                project.project_id
+              })">
                 🗑️ Delete
               </button>
             </div>
@@ -89,9 +123,12 @@ content %}
   }
 
   function filterProjects() {
-    const statusFilter = document.getElementById("project-status-filter").value;
+    const statusFilter = parseInt(
+      document.getElementById("project-status-filter").value,
+      10
+    );
     const filtered = statusFilter
-      ? allProjects.filter(p => p.status === statusFilter)
+      ? allProjects.filter(p => p.project_status_id === statusFilter)
       : allProjects;
     renderProjects(filtered);
   }
@@ -104,12 +141,15 @@ content %}
         renderProjects(allProjects);
       } catch (e) {
         console.error("Error rendering projects:", e);
-        event.target.innerHTML = '<div class="col-span-full text-center py-12"><p class="text-red-500">Error loading projects</p></div>';
+        event.target.innerHTML =
+          '<div class="col-span-full text-center py-12"><p class="text-red-500">Error loading projects</p></div>';
       }
     }
   });
 
-  document.getElementById("project-status-filter")?.addEventListener("change", filterProjects);
+  document
+    .getElementById("project-status-filter")
+    ?.addEventListener("change", filterProjects);
 
   function editProject(id) {
     alert(`Edit project ${id} - Feature coming soon!`);
