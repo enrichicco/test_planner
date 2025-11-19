@@ -54,11 +54,6 @@ class SolutionParser:
         if solution is None:
             return assignments, metadata
 
-        # Extract solution metadata
-        metadata["objective_value"] = float(getattr(solution, "objective", 0))
-        metadata["makespan"] = getattr(solution, "makespan", None)
-        metadata["total_flow_time"] = None  # Calculate if needed
-
         # Parse task assignments
         task_dict = {task.task_id: task for task in tasks}
 
@@ -73,11 +68,20 @@ class SolutionParser:
             solution_tasks = solution.get_tasks()
 
         if solution_tasks is None or len(solution_tasks) == 0:
+            # Empty solution - no tasks scheduled
             return assignments, metadata
 
-        # Calculate makespan from tasks if not directly available
-        if metadata["makespan"] is None:
+        # Extract solution metadata (only after confirming solution has tasks)
+        metadata["objective_value"] = float(getattr(solution, "objective", 0))
+
+        # Try to get makespan, but handle the case where it might fail on empty tasks
+        try:
+            metadata["makespan"] = solution.makespan
+        except (ValueError, AttributeError):
+            # Calculate makespan manually if solution.makespan fails
             metadata["makespan"] = max(task_data.end for task_data in solution_tasks)
+
+        metadata["total_flow_time"] = None  # Calculate if needed
 
         # Iterate through solution tasks
         try:

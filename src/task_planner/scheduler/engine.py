@@ -105,6 +105,16 @@ class SchedulerEngine:
         # Extract best solution from result
         solution = result.best if result is not None else None
 
+        # Check if solver found a solution
+        if result is not None and solution is None:
+            exceptions.append(
+                {
+                    "type": "NO_SOLUTION",
+                    "severity": "error",
+                    "message": f"Solver could not find a feasible solution. Status: {getattr(result, 'status', 'Unknown')}",
+                }
+            )
+
         # Parse solution
         solution_parser = SolutionParser(problem_builder, start_date)
         new_assignments, solution_metadata = solution_parser.parse_solution(solution, tasks)
@@ -131,8 +141,10 @@ class SchedulerEngine:
 
         # Check for tasks that couldn't be scheduled
         scheduled_task_ids = {a.task_id for a in new_assignments}
+        unscheduled_count = 0
         for task in tasks:
             if task.task_id not in scheduled_task_ids:
+                unscheduled_count += 1
                 exceptions.append(
                     {
                         "type": "CONSTRAINT_VIOLATION",
@@ -141,6 +153,16 @@ class SchedulerEngine:
                         "task_id": task.task_id,
                     }
                 )
+
+        # Add summary if no assignments were created
+        if len(new_assignments) == 0 and len(tasks) > 0:
+            exceptions.append(
+                {
+                    "type": "NO_ASSIGNMENTS",
+                    "severity": "error",
+                    "message": f"No assignments generated. {len(tasks)} tasks and {len(resources)} resources available. Check if tasks have realistic constraints (dates, durations).",
+                }
+            )
 
         # Check for deadline violations (if task has end_date)
         for assignment in new_assignments:
