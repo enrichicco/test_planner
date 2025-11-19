@@ -191,6 +191,10 @@ class SchedulerEngine:
             fig, ax = plt.subplots(figsize=(14, fig_height))
             plot_machine_gantt(solution, problem_data, ax=ax, plot_labels=True)
 
+            # Reduce font size of task labels
+            for text in ax.texts:
+                text.set_fontsize(5)
+
             # Improve the appearance
             ax.set_xlabel("Time (minutes)", fontsize=10)
             ax.set_ylabel("Machines/Resources", fontsize=10)
