@@ -102,12 +102,14 @@ class ProblemBuilder:
                     else MAX_VALUE
                 )
 
+                # Ensure latest_end >= earliest_end (earliest_start + duration)
+                # PyJobShop requires earliest_end <= latest_end
+                calculated_latest_end = max(earliest_start + duration, latest_end)
+
                 pj_task = self.model.add_task(
                     job=job,
                     earliest_start=earliest_start,
-                    latest_end=(
-                        earliest_start + duration if latest_end == MAX_VALUE else latest_end
-                    ),
+                    latest_end=calculated_latest_end,
                     name=f"task_{task.task_id}",
                 )
 
