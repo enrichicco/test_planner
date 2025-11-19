@@ -191,6 +191,42 @@ class SchedulerEngine:
             fig, ax = plt.subplots(figsize=(14, fig_height))
             plot_machine_gantt(solution, problem_data, ax=ax)
 
+            # Add task labels on each bar
+            try:
+                for task_idx, task_data in enumerate(solution.tasks):
+                    # Get the machine index for this task
+                    machine = task_data.machine
+                    machine_idx = None
+                    for idx, m in enumerate(problem_data.resources):
+                        if m == machine:
+                            machine_idx = idx
+                            break
+
+                    if machine_idx is not None:
+                        # Get task name from problem_data
+                        task_name = problem_data.tasks[task_idx].name if hasattr(problem_data.tasks[task_idx], 'name') else f"T{task_idx}"
+
+                        # Calculate center position of the task bar
+                        start_time = task_data.start
+                        end_time = task_data.end
+                        center_x = (start_time + end_time) / 2
+                        center_y = machine_idx
+
+                        # Add text label
+                        ax.text(
+                            center_x,
+                            center_y,
+                            task_name,
+                            ha='center',
+                            va='center',
+                            fontsize=7,
+                            color='white',
+                            weight='bold',
+                            bbox=dict(boxstyle='round,pad=0.3', facecolor='black', alpha=0.5, edgecolor='none')
+                        )
+            except Exception as e:
+                print(f"Warning: Could not add task labels to Gantt chart: {e}")
+
             # Improve the appearance
             ax.set_xlabel("Time (minutes)", fontsize=10)
             ax.set_ylabel("Machines/Resources", fontsize=10)
