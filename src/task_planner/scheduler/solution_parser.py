@@ -88,7 +88,7 @@ class SolutionParser:
                     # Get resource ID from machine
                     # machine is a Machine object, find its index
                     machine_idx = None
-                    for idx, m in enumerate(self.problem_builder.model.machines):
+                    for idx, m in enumerate(self.problem_builder.machine_objects):
                         if m == machine:
                             machine_idx = idx
                             break

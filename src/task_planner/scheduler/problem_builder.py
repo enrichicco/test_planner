@@ -20,6 +20,7 @@ class ProblemBuilder:
         self.resource_mapping: Dict[
             int, int
         ] = {}  # DB resource id -> PyJobShop machine/resource index
+        self.machine_objects: list = []  # Store machine objects for mode assignment
 
     def build_problem(
         self,
@@ -45,10 +46,11 @@ class ProblemBuilder:
         # Create machines (resources that can perform work)
         # In a2rp, resources are generic - they can be people, equipment, etc.
         for idx, resource in enumerate(resources):
-            self.model.add_machine(
+            machine = self.model.add_machine(
                 name=f"resource_{resource.resource_id}",
             )
             self.resource_mapping[resource.resource_id] = idx
+            self.machine_objects.append(machine)
 
         # Create jobs and tasks
         # Group tasks by project
@@ -118,7 +120,7 @@ class ProblemBuilder:
                 # Add modes: allow any resource to perform this task
                 # Each mode represents a (machine, duration) pair
                 for resource_id, machine_idx in self.resource_mapping.items():
-                    machine = self.model.machines[machine_idx]
+                    machine = self.machine_objects[machine_idx]
                     self.model.add_mode(pj_task, machine, duration)
 
         return self.model
