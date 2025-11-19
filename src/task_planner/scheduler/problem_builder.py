@@ -60,6 +60,7 @@ class ProblemBuilder:
         print(f"Schedule window: {start_date}")
         print(f"Total resources: {len(resources)}")
         print(f"Total tasks: {len(tasks)}")
+        print(f"Mode: Ignoring individual task dates - all tasks schedulable within window")
 
         # Create jobs and tasks
         # Group tasks by project
@@ -74,44 +75,18 @@ class ProblemBuilder:
         for project_id, project_tasks in job_groups.items():
             job_name = f"project_{project_id}" if project_id else "no_project"
 
-            # Aggregate dates
-            job_release = None
-            job_deadline = MAX_VALUE
-            job_due = None
-
-            for task in project_tasks:
-                if task.start_date:
-                    release_minutes = max(0, int((task.start_date - start_date).total_seconds() / 60))
-                    job_release = release_minutes if job_release is None else min(job_release, release_minutes)
-
-                if task.end_date:
-                    deadline_minutes = max(0, int((task.end_date - start_date).total_seconds() / 60))
-                    job_deadline = max(
-                        job_deadline if job_deadline != MAX_VALUE else deadline_minutes,
-                        deadline_minutes,
-                    )
-
+            # Jobs can start immediately (release_date=0) and have no deadline
+            # This allows the scheduler to freely place tasks within the schedule window
             job = self.model.add_job(
                 name=job_name,
-                release_date=job_release if job_release is not None else 0,
-                deadline=job_deadline,
-                due_date=job_due,
+                release_date=0,
+                deadline=MAX_VALUE,
+                due_date=None,
             )
 
             for task in project_tasks:
                 # Duration in minutes (work is in hours)
                 duration = int((task.work or 8.0) * 60)
-
-                earliest_start = (
-                    max(0, int((task.start_date - start_date).total_seconds() / 60))
-                    if task.start_date
-                    else 0
-                )
-                latest_end = (
-                    max(0, int((task.end_date - start_date).total_seconds() / 60))
-                    if task.end_date
-                    else MAX_VALUE
-                )
 
                 # Track diagnostics
                 if task.start_date is None and task.end_date is None:
@@ -119,22 +94,25 @@ class ProblemBuilder:
                 if task.start_date and task.start_date < start_date:
                     tasks_with_past_dates += 1
 
-                # Ensure latest_end >= earliest_end (earliest_start + duration)
-                # PyJobShop requires earliest_end <= latest_end
-                calculated_latest_end = max(earliest_start + duration, latest_end)
+                # IGNORE individual task dates - schedule all tasks within the window
+                # Tasks can start immediately (earliest_start=0)
+                # Tasks can end anytime (latest_end=MAX_VALUE)
+                earliest_start = 0
+                latest_end = MAX_VALUE
 
                 # Debug first few tasks
                 if len(self.task_mapping) < 3:
                     print(f"\nTask {task.task_id} ({task.name}):")
                     print(f"  work: {task.work}h -> duration: {duration}min")
-                    print(f"  start_date: {task.start_date} -> earliest_start: {earliest_start}min")
-                    print(f"  end_date: {task.end_date} -> latest_end: {latest_end}min")
-                    print(f"  calculated_latest_end: {calculated_latest_end}min")
+                    print(f"  DB start_date: {task.start_date} (IGNORED)")
+                    print(f"  DB end_date: {task.end_date} (IGNORED)")
+                    print(f"  earliest_start: {earliest_start}min (can start immediately)")
+                    print(f"  latest_end: {latest_end} (no deadline)")
 
                 pj_task = self.model.add_task(
                     job=job,
                     earliest_start=earliest_start,
-                    latest_end=calculated_latest_end,
+                    latest_end=latest_end,
                     name=f"task_{task.task_id}",
                 )
 
