@@ -43,6 +43,10 @@ class ProblemBuilder:
         """
         self.model = Model()
 
+        # Diagnostic counters
+        tasks_without_dates = 0
+        tasks_with_past_dates = 0
+
         # Create machines (resources that can perform work)
         # In a2rp, resources are generic - they can be people, equipment, etc.
         for idx, resource in enumerate(resources):
@@ -51,6 +55,11 @@ class ProblemBuilder:
             )
             self.resource_mapping[resource.resource_id] = idx
             self.machine_objects.append(machine)
+
+        print(f"\n=== Scheduler Diagnostics ===")
+        print(f"Schedule window: {start_date}")
+        print(f"Total resources: {len(resources)}")
+        print(f"Total tasks: {len(tasks)}")
 
         # Create jobs and tasks
         # Group tasks by project
@@ -104,9 +113,23 @@ class ProblemBuilder:
                     else MAX_VALUE
                 )
 
+                # Track diagnostics
+                if task.start_date is None and task.end_date is None:
+                    tasks_without_dates += 1
+                if task.start_date and task.start_date < start_date:
+                    tasks_with_past_dates += 1
+
                 # Ensure latest_end >= earliest_end (earliest_start + duration)
                 # PyJobShop requires earliest_end <= latest_end
                 calculated_latest_end = max(earliest_start + duration, latest_end)
+
+                # Debug first few tasks
+                if len(self.task_mapping) < 3:
+                    print(f"\nTask {task.task_id} ({task.name}):")
+                    print(f"  work: {task.work}h -> duration: {duration}min")
+                    print(f"  start_date: {task.start_date} -> earliest_start: {earliest_start}min")
+                    print(f"  end_date: {task.end_date} -> latest_end: {latest_end}min")
+                    print(f"  calculated_latest_end: {calculated_latest_end}min")
 
                 pj_task = self.model.add_task(
                     job=job,
@@ -122,6 +145,13 @@ class ProblemBuilder:
                 for resource_id, machine_idx in self.resource_mapping.items():
                     machine = self.machine_objects[machine_idx]
                     self.model.add_mode(pj_task, machine, duration)
+
+        print(f"\n=== Constraint Summary ===")
+        print(f"Tasks without dates (start/end both None): {tasks_without_dates}")
+        print(f"Tasks with start dates before schedule start: {tasks_with_past_dates}")
+        print(f"Total PyJobShop tasks created: {len(self.task_mapping)}")
+        print(f"Total modes (task-resource pairs): {len(self.task_mapping) * len(self.machine_objects)}")
+        print(f"===========================\n")
 
         return self.model
 
