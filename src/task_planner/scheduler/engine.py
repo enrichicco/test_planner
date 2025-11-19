@@ -9,6 +9,7 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 
 from pyjobshop import solve
+from pyjobshop.plot import plot_task_gantt_chart
 
 from ..models.a2rp import Assignment, Resource, Task
 from .problem_builder import ProblemBuilder
@@ -113,10 +114,12 @@ class SchedulerEngine:
         # Generate Gantt chart if solution exists
         if solution is not None:
             try:
-                gantt_base64 = self._generate_gantt_chart(solution)
+                gantt_base64 = self._generate_gantt_chart(solution, problem_builder.model.data())
                 metadata["gantt_chart"] = gantt_base64
             except Exception as e:
                 print(f"Warning: Could not generate Gantt chart: {e}")
+                import traceback
+                traceback.print_exc()
 
         # Check for tasks that couldn't be scheduled
         scheduled_task_ids = {a.task_id for a in new_assignments}
@@ -149,12 +152,13 @@ class SchedulerEngine:
 
         return new_assignments, metadata, exceptions
 
-    def _generate_gantt_chart(self, solution: Any) -> Optional[str]:
+    def _generate_gantt_chart(self, solution: Any, problem_data: Any) -> Optional[str]:
         """
         Generate a Gantt chart from the solution.
 
         Args:
             solution: PyJobShop solution object
+            problem_data: PyJobShop problem data
 
         Returns:
             Base64 encoded PNG image of the Gantt chart, or None if generation fails
@@ -165,8 +169,15 @@ class SchedulerEngine:
             matplotlib.use("Agg")  # Use non-interactive backend
             import matplotlib.pyplot as plt
 
-            # PyJobShop has a built-in plot method
-            fig = solution.plot()
+            # Use PyJobShop's built-in Gantt chart plotting function
+            fig, ax = plt.subplots(figsize=(12, 6))
+            plot_task_gantt_chart(solution, problem_data, ax=ax)
+
+            # Improve the appearance
+            ax.set_xlabel("Time (minutes)", fontsize=10)
+            ax.set_ylabel("Tasks", fontsize=10)
+            ax.set_title("Schedule Gantt Chart", fontsize=12, fontweight="bold")
+            plt.tight_layout()
 
             # Save to bytes buffer
             buf = io.BytesIO()
@@ -180,6 +191,8 @@ class SchedulerEngine:
 
         except Exception as e:
             print(f"Error generating Gantt chart: {e}")
+            import traceback
+            traceback.print_exc()
             return None
 
     def validate_schedule(
