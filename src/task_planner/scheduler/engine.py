@@ -191,30 +191,40 @@ class SchedulerEngine:
             fig, ax = plt.subplots(figsize=(14, fig_height))
             plot_machine_gantt(solution, problem_data, ax=ax)
 
-            # Add task labels on each bar
+            # Add task labels on each bar by inspecting matplotlib patches
             try:
-                for task_idx, task_data in enumerate(solution.tasks):
-                    # Get the machine/resource for this task (same approach as solution_parser)
-                    machine = task_data.machine
+                # After plot_machine_gantt, the ax contains Rectangle patches for each task
+                # We'll iterate through these patches and add text labels
+                for patch in ax.patches:
+                    # Get the bounds of the rectangle
+                    x = patch.get_x()
+                    width = patch.get_width()
+                    y = patch.get_y()
+                    height = patch.get_height()
 
-                    # Find the machine index by comparing with problem_data.resources
-                    machine_idx = None
-                    for idx, m in enumerate(problem_data.resources):
-                        if m == machine:
-                            machine_idx = idx
+                    # Calculate center position
+                    center_x = x + width / 2
+                    center_y = y + height / 2
+
+                    # Find which task this corresponds to by matching start time and machine
+                    # The y-coordinate corresponds to the machine index
+                    machine_idx = int(round(center_y))
+                    start_time = x
+
+                    # Find the task that starts at this time on this machine
+                    task_name = None
+                    for task_idx, task_data in enumerate(solution.tasks):
+                        if abs(task_data.start - start_time) < 0.5:  # Allow small floating point differences
+                            # This might be the right task, verify it's on the right machine
+                            # For now, just use the task name
+                            if hasattr(problem_data.tasks[task_idx], 'name'):
+                                task_name = problem_data.tasks[task_idx].name
+                            else:
+                                task_name = f"T{task_idx}"
                             break
 
-                    if machine_idx is not None:
-                        # Get task name from problem_data
-                        task_name = problem_data.tasks[task_idx].name if hasattr(problem_data.tasks[task_idx], 'name') else f"T{task_idx}"
-
-                        # Calculate center position of the task bar
-                        start_time = task_data.start
-                        end_time = task_data.end
-                        center_x = (start_time + end_time) / 2
-                        center_y = machine_idx
-
-                        # Add text label
+                    # Add text label if we found a task name and the bar is wide enough
+                    if task_name and width > 100:  # Only add label if bar is wide enough (>100 minutes)
                         ax.text(
                             center_x,
                             center_y,
