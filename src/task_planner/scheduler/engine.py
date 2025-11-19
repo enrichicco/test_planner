@@ -130,13 +130,14 @@ class SchedulerEngine:
             metadata["lower_bound"] = float(getattr(result, "lower_bound", 0))
 
         # Generate Gantt chart if solution exists
-        if solution is not None:
+        if solution is not None and problem_builder.model is not None:
             try:
                 gantt_base64 = self._generate_gantt_chart(solution, problem_builder.model.data())
                 metadata["gantt_chart"] = gantt_base64
             except Exception as e:
                 print(f"Warning: Could not generate Gantt chart: {e}")
                 import traceback
+
                 traceback.print_exc()
 
         # Check for tasks that couldn't be scheduled
@@ -185,7 +186,7 @@ class SchedulerEngine:
 
             # Use PyJobShop's built-in Gantt chart plotting function
             # Calculate height based on number of machines/resources
-            num_machines = len(problem_data.machines)
+            num_machines = len(problem_data.resources)
             fig_height = max(6, num_machines * 0.4)  # At least 6, scale with machines
             fig, ax = plt.subplots(figsize=(14, fig_height))
             plot_machine_gantt(solution, problem_data, ax=ax)
@@ -213,6 +214,7 @@ class SchedulerEngine:
         except Exception as e:
             print(f"Error generating Gantt chart: {e}")
             import traceback
+
             traceback.print_exc()
             return None
 

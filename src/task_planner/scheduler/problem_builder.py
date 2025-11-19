@@ -5,7 +5,7 @@ Problem builder for converting a2rp database models to PyJobShop problems.
 from datetime import datetime
 from typing import Dict, List, Optional
 
-from pyjobshop import MAX_VALUE, Model
+from pyjobshop import MAX_VALUE, Machine, Model
 from pyjobshop import Task as PJTask
 
 from ..models.a2rp import Assignment, Resource, Task
@@ -20,7 +20,7 @@ class ProblemBuilder:
         self.resource_mapping: Dict[
             int, int
         ] = {}  # DB resource id -> PyJobShop machine/resource index
-        self.machine_objects: list = []  # Store machine objects for mode assignment
+        self.machine_objects: List[Machine] = []  # Store machine objects for mode assignment
 
     def build_problem(
         self,
@@ -153,7 +153,9 @@ class ProblemBuilder:
         print(f"Tasks without dates (start/end both None): {tasks_without_dates}")
         print(f"Tasks with start dates before schedule start: {tasks_with_past_dates}")
         print(f"Total PyJobShop tasks created: {len(self.task_mapping)}")
-        print(f"Total modes (task-resource pairs): {len(self.task_mapping) * len(self.machine_objects)}")
+        print(
+            f"Total modes (task-resource pairs): {len(self.task_mapping) * len(self.machine_objects)}"
+        )
         print(f"===========================\n")
 
         return self.model
