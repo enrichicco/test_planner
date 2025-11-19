@@ -189,64 +189,15 @@ class SchedulerEngine:
             num_machines = len(problem_data.resources)
             fig_height = max(6, num_machines * 0.4)  # At least 6, scale with machines
             fig, ax = plt.subplots(figsize=(14, fig_height))
-            plot_machine_gantt(solution, problem_data, ax=ax)
-
-            # Add task labels on each bar by inspecting matplotlib patches
-            try:
-                # After plot_machine_gantt, the ax contains Rectangle patches for each task
-                # We'll iterate through these patches and add text labels
-                for patch in ax.patches:
-                    # Get the bounds of the rectangle
-                    x = patch.get_x()
-                    width = patch.get_width()
-                    y = patch.get_y()
-                    height = patch.get_height()
-
-                    # Calculate center position
-                    center_x = x + width / 2
-                    center_y = y + height / 2
-
-                    # Find which task this corresponds to by matching start time and machine
-                    # The y-coordinate corresponds to the machine index
-                    machine_idx = int(round(center_y))
-                    start_time = x
-
-                    # Find the task that starts at this time on this machine
-                    task_name = None
-                    for task_idx, task_data in enumerate(solution.tasks):
-                        if abs(task_data.start - start_time) < 0.5:  # Allow small floating point differences
-                            # This might be the right task, verify it's on the right machine
-                            # For now, just use the task name
-                            if hasattr(problem_data.tasks[task_idx], 'name'):
-                                task_name = problem_data.tasks[task_idx].name
-                            else:
-                                task_name = f"T{task_idx}"
-                            break
-
-                    # Add text label if we found a task name and the bar is wide enough
-                    if task_name and width > 100:  # Only add label if bar is wide enough (>100 minutes)
-                        ax.text(
-                            center_x,
-                            center_y,
-                            task_name,
-                            ha='center',
-                            va='center',
-                            fontsize=7,
-                            color='white',
-                            weight='bold',
-                            bbox=dict(boxstyle='round,pad=0.3', facecolor='black', alpha=0.5, edgecolor='none')
-                        )
-            except Exception as e:
-                print(f"Warning: Could not add task labels to Gantt chart: {e}")
-                import traceback
-                traceback.print_exc()
+            plot_machine_gantt(solution, problem_data, ax=ax, plot_labels=True)
 
             # Improve the appearance
             ax.set_xlabel("Time (minutes)", fontsize=10)
             ax.set_ylabel("Machines/Resources", fontsize=10)
-            ax.set_title("Schedule Gantt Chart", fontsize=12, fontweight="bold")
+            # ax.set_title("Schedule Gantt Chart", fontsize=12, fontweight="bold")
 
             # Fix overlapping y-axis labels
+            plt.yticks(rotation=15)
             plt.setp(ax.get_yticklabels(), fontsize=8)
 
             plt.tight_layout(pad=1.5)
