@@ -194,8 +194,10 @@ class SchedulerEngine:
             # Add task labels on each bar
             try:
                 for task_idx, task_data in enumerate(solution.tasks):
-                    # Get the machine index for this task
+                    # Get the machine/resource for this task (same approach as solution_parser)
                     machine = task_data.machine
+
+                    # Find the machine index by comparing with problem_data.resources
                     machine_idx = None
                     for idx, m in enumerate(problem_data.resources):
                         if m == machine:
@@ -226,6 +228,8 @@ class SchedulerEngine:
                         )
             except Exception as e:
                 print(f"Warning: Could not add task labels to Gantt chart: {e}")
+                import traceback
+                traceback.print_exc()
 
             # Improve the appearance
             ax.set_xlabel("Time (minutes)", fontsize=10)
