@@ -92,6 +92,20 @@ block content %}
     </div>
   </div>
 
+  <!-- Gantt Chart Panel -->
+  <div
+    class="card mt-6"
+    id="gantt-panel"
+    style="display: none"
+  >
+    <div class="card-header">
+      <h3 class="font-bold">Schedule Gantt Chart</h3>
+    </div>
+    <div class="card-body">
+      <div id="gantt-chart" class="text-center"></div>
+    </div>
+  </div>
+
   <!-- Metadata Panel -->
   <div
     class="card mt-6"
@@ -233,6 +247,20 @@ block content %}
   function displayMetadata(metadata) {
     const metadataDiv = document.getElementById("schedule-metadata");
     const panel = document.getElementById("metadata-panel");
+    const ganttPanel = document.getElementById("gantt-panel");
+    const ganttDiv = document.getElementById("gantt-chart");
+
+    // Extract and display Gantt chart if available
+    if (metadata.gantt_chart) {
+      ganttPanel.style.display = "block";
+      ganttDiv.innerHTML = `<img src="${metadata.gantt_chart}" alt="Schedule Gantt Chart" class="max-w-full h-auto mx-auto" />`;
+
+      // Remove gantt_chart from metadata to avoid displaying it in the metadata panel
+      const { gantt_chart, ...otherMetadata } = metadata;
+      metadata = otherMetadata;
+    } else {
+      ganttPanel.style.display = "none";
+    }
 
     if (Object.keys(metadata).length === 0) {
       panel.style.display = "none";
@@ -243,13 +271,20 @@ block content %}
 
     let html = "";
     for (const [key, value] of Object.entries(metadata)) {
+      // Skip null or undefined values
+      if (value === null || value === undefined) continue;
+
       const label = key
         .replace(/_/g, " ")
         .replace(/\b\w/g, l => l.toUpperCase());
+
+      // Format numbers nicely
+      const displayValue = typeof value === 'number' ? value.toFixed(2) : value;
+
       html += `
         <div class="p-3 bg-gray-50 rounded">
           <div class="text-xs text-gray-500 uppercase">${label}</div>
-          <div class="text-lg font-bold text-brand">${value}</div>
+          <div class="text-lg font-bold text-brand">${displayValue}</div>
         </div>
       `;
     }

@@ -55,57 +55,69 @@ class SolutionParser:
             return assignments, metadata
 
         # Extract solution metadata
-        metadata["objective_value"] = float(getattr(solution, "objective", lambda: None)() or 0)
-        metadata["makespan"] = getattr(solution, "makespan", lambda: None)()
+        metadata["objective_value"] = float(getattr(solution, "objective", 0))
+        metadata["makespan"] = getattr(solution, "makespan", None)
+        metadata["total_flow_time"] = None  # Calculate if needed
 
         # Parse task assignments
         task_dict = {task.task_id: task for task in tasks}
 
-        if self.problem_builder.model is None:
+        if self.problem_builder.model is None or not hasattr(solution, "tasks"):
             return assignments, metadata
 
-        # Iterate through solution to extract assignments
-        # The exact API depends on PyJobShop version
+        # Calculate makespan from tasks if not directly available
+        if metadata["makespan"] is None and len(solution.tasks) > 0:
+            metadata["makespan"] = max(task_data.end for task_data in solution.tasks)
+
+        # Iterate through solution tasks
         try:
-            # Attempt to get task assignments from solution
-            for pj_task_idx in range(len(self.problem_builder.model.tasks)):
+            for pj_task_idx, task_data in enumerate(solution.tasks):
                 task_id = self.problem_builder.get_task_id(pj_task_idx)
                 if task_id and task_id in task_dict:
                     task = task_dict[task_id]
 
-                    # Get scheduled start and end times
-                    try:
-                        # These methods may vary based on PyJobShop version
-                        start_time = solution.task_start(pj_task_idx)
-                        end_time = solution.task_end(pj_task_idx)
-                        machine_idx = solution.task_machine(pj_task_idx)
+                    # Get scheduled start and end times from task_data
+                    start_time = task_data.start
+                    end_time = task_data.end
+                    machine = task_data.machine
 
-                        # Convert from minutes to datetime
-                        scheduled_start = self.start_date + timedelta(minutes=start_time)
-                        scheduled_end = self.start_date + timedelta(minutes=end_time)
+                    # Convert from minutes to datetime
+                    scheduled_start = self.start_date + timedelta(minutes=start_time)
+                    scheduled_end = self.start_date + timedelta(minutes=end_time)
 
-                        # Get resource ID from machine index
-                        resource_id = self.problem_builder.get_resource_id(machine_idx)
+                    # Get resource ID from machine
+                    # machine is a Machine object, find its index
+                    machine_idx = None
+                    for idx, m in enumerate(self.problem_builder.model.machines):
+                        if m == machine:
+                            machine_idx = idx
+                            break
 
-                        # Calculate work hours from time difference
-                        work_hours = (scheduled_end - scheduled_start).total_seconds() / 3600
+                    resource_id = (
+                        self.problem_builder.get_resource_id(machine_idx)
+                        if machine_idx is not None
+                        else None
+                    )
 
-                        # Create assignment
-                        assignment = Assignment(
-                            task_id=task.task_id,
-                            resource_id=resource_id,
-                            work=work_hours,
-                            start_date=scheduled_start,
-                            end_date=scheduled_end,
-                        )
-                        assignments.append(assignment)
+                    # Calculate work hours from time difference
+                    work_hours = (scheduled_end - scheduled_start).total_seconds() / 3600
 
-                    except (AttributeError, IndexError, KeyError):
-                        # Solution doesn't have this information or task not scheduled
-                        continue
+                    # Create assignment
+                    assignment = Assignment(
+                        task_id=task.task_id,
+                        resource_id=resource_id,
+                        work=work_hours,
+                        start_date=scheduled_start,
+                        end_date=scheduled_end,
+                        wp_status_id="scheduled",
+                    )
+                    assignments.append(assignment)
 
         except Exception as e:
             # Handle parsing errors gracefully
             print(f"Warning: Error parsing solution: {e}")
+            import traceback
+
+            traceback.print_exc()
 
         return assignments, metadata

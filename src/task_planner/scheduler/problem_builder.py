@@ -115,6 +115,12 @@ class ProblemBuilder:
 
                 self.task_mapping[task.task_id] = pj_task
 
+                # Add modes: allow any resource to perform this task
+                # Each mode represents a (machine, duration) pair
+                for resource_id, machine_idx in self.resource_mapping.items():
+                    machine = self.model.machines[machine_idx]
+                    self.model.add_mode(pj_task, machine, duration)
+
         return self.model
 
     def get_task_id(self, pyjobshop_idx: int) -> Optional[int]:

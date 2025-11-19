@@ -2,6 +2,8 @@
 Main scheduling engine using PyJobShop for a2rp schema.
 """
 
+import base64
+import io
 import time
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
@@ -108,6 +110,14 @@ class SchedulerEngine:
         metadata["solver_used"] = self.solver
         metadata["solve_time"] = solve_time
 
+        # Generate Gantt chart if solution exists
+        if solution is not None:
+            try:
+                gantt_base64 = self._generate_gantt_chart(solution)
+                metadata["gantt_chart"] = gantt_base64
+            except Exception as e:
+                print(f"Warning: Could not generate Gantt chart: {e}")
+
         # Check for tasks that couldn't be scheduled
         scheduled_task_ids = {a.task_id for a in new_assignments}
         for task in tasks:
@@ -138,6 +148,39 @@ class SchedulerEngine:
                     )
 
         return new_assignments, metadata, exceptions
+
+    def _generate_gantt_chart(self, solution: Any) -> Optional[str]:
+        """
+        Generate a Gantt chart from the solution.
+
+        Args:
+            solution: PyJobShop solution object
+
+        Returns:
+            Base64 encoded PNG image of the Gantt chart, or None if generation fails
+        """
+        try:
+            import matplotlib
+
+            matplotlib.use("Agg")  # Use non-interactive backend
+            import matplotlib.pyplot as plt
+
+            # PyJobShop has a built-in plot method
+            fig = solution.plot()
+
+            # Save to bytes buffer
+            buf = io.BytesIO()
+            fig.savefig(buf, format="png", bbox_inches="tight", dpi=100)
+            buf.seek(0)
+            plt.close(fig)
+
+            # Encode as base64
+            img_base64 = base64.b64encode(buf.read()).decode("utf-8")
+            return f"data:image/png;base64,{img_base64}"
+
+        except Exception as e:
+            print(f"Error generating Gantt chart: {e}")
+            return None
 
     def validate_schedule(
         self,
