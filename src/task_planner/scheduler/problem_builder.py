@@ -74,7 +74,7 @@ class ProblemBuilder:
                     job_release = release_minutes if job_release is None else min(job_release, release_minutes)
 
                 if task.end_date:
-                    deadline_minutes = int((task.end_date - start_date).total_seconds() / 60)
+                    deadline_minutes = max(0, int((task.end_date - start_date).total_seconds() / 60))
                     job_deadline = max(
                         job_deadline if job_deadline != MAX_VALUE else deadline_minutes,
                         deadline_minutes,
@@ -97,7 +97,7 @@ class ProblemBuilder:
                     else 0
                 )
                 latest_end = (
-                    int((task.end_date - start_date).total_seconds() / 60)
+                    max(0, int((task.end_date - start_date).total_seconds() / 60))
                     if task.end_date
                     else MAX_VALUE
                 )
