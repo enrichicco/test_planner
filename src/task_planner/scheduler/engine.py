@@ -189,7 +189,47 @@ class SchedulerEngine:
             num_machines = len(problem_data.resources)
             fig_height = max(6, num_machines * 0.4)  # At least 6, scale with machines
             fig, ax = plt.subplots(figsize=(14, fig_height))
-            plot_machine_gantt(solution, problem_data, ax=ax, plot_labels=True)
+            plot_machine_gantt(solution, problem_data, ax=ax, plot_labels=False)
+
+            # Add custom task labels with smaller font size
+            try:
+                for patch in ax.patches:
+                    # Get the bounds of the rectangle
+                    x = patch.get_x()
+                    width = patch.get_width()
+                    y = patch.get_y()
+                    height = patch.get_height()
+
+                    # Calculate center position
+                    center_x = x + width / 2
+                    center_y = y + height / 2
+
+                    # Find which task this corresponds to by matching start time
+                    start_time = x
+                    task_name = None
+                    for task_idx, task_data in enumerate(solution.tasks):
+                        if abs(task_data.start - start_time) < 0.5:
+                            if hasattr(problem_data.tasks[task_idx], 'name'):
+                                task_name = problem_data.tasks[task_idx].name
+                            else:
+                                task_name = f"T{task_idx}"
+                            break
+
+                    # Add text label if we found a task name and the bar is wide enough
+                    if task_name and width > 100:  # Only add label if bar is wide enough
+                        ax.text(
+                            center_x,
+                            center_y,
+                            task_name,
+                            ha='center',
+                            va='center',
+                            fontsize=5,  # Smaller font size
+                            color='white',
+                            weight='bold',
+                            bbox=dict(boxstyle='round,pad=0.2', facecolor='black', alpha=0.5, edgecolor='none')
+                        )
+            except Exception as e:
+                print(f"Warning: Could not add task labels: {e}")
 
             # Improve the appearance
             ax.set_xlabel("Time (minutes)", fontsize=10)
