@@ -48,8 +48,31 @@ class ProblemBuilder:
         tasks_with_past_dates = 0
 
         # Create machines (resources that can perform work)
-        # In a2rp, resources are generic - they can be people, equipment, etc.
-        for idx, resource in enumerate(resources):
+        # Filter resources based on availability window
+        available_resources = []
+        skipped_resources = 0
+
+        for resource in resources:
+            # Check if resource is available during schedule window
+            is_available = True
+
+            if resource.earliest_available_from is not None:
+                # Resource becomes available after this date
+                if resource.earliest_available_from > start_date:
+                    is_available = False
+
+            if resource.latest_available_to is not None:
+                # Resource is no longer available after this date
+                if resource.latest_available_to < start_date:
+                    is_available = False
+
+            if is_available:
+                available_resources.append(resource)
+            else:
+                skipped_resources += 1
+
+        # Create machines only for available resources
+        for idx, resource in enumerate(available_resources):
             machine = self.model.add_machine(
                 name=f"resource_{resource.resource_id}",
             )
@@ -59,6 +82,8 @@ class ProblemBuilder:
         print(f"\n=== Scheduler Diagnostics ===")
         print(f"Schedule window: {start_date}")
         print(f"Total resources: {len(resources)}")
+        print(f"Available resources: {len(available_resources)}")
+        print(f"Skipped resources (not available): {skipped_resources}")
         print(f"Total tasks: {len(tasks)}")
         print(f"Mode: Ignoring individual task dates - all tasks schedulable within window")
 

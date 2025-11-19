@@ -164,22 +164,6 @@ class SchedulerEngine:
                 }
             )
 
-        # Check for deadline violations (if task has end_date)
-        for assignment in new_assignments:
-            task_obj: Optional[Task] = next(
-                (t for t in tasks if t.task_id == assignment.task_id), None
-            )
-            if task_obj and task_obj.end_date and assignment.end_date:
-                if assignment.end_date > task_obj.end_date:
-                    exceptions.append(
-                        {
-                            "type": "DEADLINE_MISS",
-                            "severity": "error",
-                            "message": f"Task '{task_obj.name}' scheduled to end after deadline",
-                            "task_id": task_obj.task_id,
-                        }
-                    )
-
         return new_assignments, metadata, exceptions
 
     def _generate_gantt_chart(self, solution: Any, problem_data: Any) -> Optional[str]:
@@ -200,14 +184,21 @@ class SchedulerEngine:
             import matplotlib.pyplot as plt
 
             # Use PyJobShop's built-in Gantt chart plotting function
-            fig, ax = plt.subplots(figsize=(12, 6))
+            # Calculate height based on number of machines/resources
+            num_machines = len(problem_data.machines)
+            fig_height = max(6, num_machines * 0.4)  # At least 6, scale with machines
+            fig, ax = plt.subplots(figsize=(14, fig_height))
             plot_machine_gantt(solution, problem_data, ax=ax)
 
             # Improve the appearance
             ax.set_xlabel("Time (minutes)", fontsize=10)
-            ax.set_ylabel("Tasks", fontsize=10)
+            ax.set_ylabel("Machines/Resources", fontsize=10)
             ax.set_title("Schedule Gantt Chart", fontsize=12, fontweight="bold")
-            plt.tight_layout()
+
+            # Fix overlapping y-axis labels
+            plt.setp(ax.get_yticklabels(), fontsize=8)
+
+            plt.tight_layout(pad=1.5)
 
             # Save to bytes buffer
             buf = io.BytesIO()
