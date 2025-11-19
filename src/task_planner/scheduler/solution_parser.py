@@ -62,16 +62,26 @@ class SolutionParser:
         # Parse task assignments
         task_dict = {task.task_id: task for task in tasks}
 
-        if self.problem_builder.model is None or not hasattr(solution, "tasks"):
+        if self.problem_builder.model is None:
+            return assignments, metadata
+
+        # Get tasks from solution - could be an attribute or a method
+        solution_tasks = None
+        if hasattr(solution, "tasks"):
+            solution_tasks = solution.tasks
+        elif hasattr(solution, "get_tasks"):
+            solution_tasks = solution.get_tasks()
+
+        if solution_tasks is None or len(solution_tasks) == 0:
             return assignments, metadata
 
         # Calculate makespan from tasks if not directly available
-        if metadata["makespan"] is None and len(solution.tasks) > 0:
-            metadata["makespan"] = max(task_data.end for task_data in solution.tasks)
+        if metadata["makespan"] is None:
+            metadata["makespan"] = max(task_data.end for task_data in solution_tasks)
 
         # Iterate through solution tasks
         try:
-            for pj_task_idx, task_data in enumerate(solution.tasks):
+            for pj_task_idx, task_data in enumerate(solution_tasks):
                 task_id = self.problem_builder.get_task_id(pj_task_idx)
                 if task_id and task_id in task_dict:
                     task = task_dict[task_id]

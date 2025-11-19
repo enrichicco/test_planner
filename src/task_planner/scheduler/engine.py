@@ -9,7 +9,7 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 
 from pyjobshop import solve
-from pyjobshop.plot import plot_task_gantt_chart
+from pyjobshop.plot import plot_machine_gantt
 
 from ..models.a2rp import Assignment, Resource, Task
 from .problem_builder import ProblemBuilder
@@ -82,10 +82,10 @@ class SchedulerEngine:
 
         # Solve the problem
         solve_start = time.time()
-        solution = None
+        result = None
         try:
             if solve is not None:
-                solution = solve(
+                result = solve(
                     model.data(),
                     solver=self.solver,
                     time_limit=self.time_limit,
@@ -102,6 +102,9 @@ class SchedulerEngine:
 
         solve_time = time.time() - solve_start
 
+        # Extract best solution from result
+        solution = result.best if result is not None else None
+
         # Parse solution
         solution_parser = SolutionParser(problem_builder, start_date)
         new_assignments, solution_metadata = solution_parser.parse_solution(solution, tasks)
@@ -110,6 +113,11 @@ class SchedulerEngine:
         metadata.update(solution_metadata)
         metadata["solver_used"] = self.solver
         metadata["solve_time"] = solve_time
+
+        # Add Result metadata if available
+        if result is not None:
+            metadata["result_status"] = str(getattr(result, "status", "Unknown"))
+            metadata["lower_bound"] = float(getattr(result, "lower_bound", 0))
 
         # Generate Gantt chart if solution exists
         if solution is not None:
@@ -171,7 +179,7 @@ class SchedulerEngine:
 
             # Use PyJobShop's built-in Gantt chart plotting function
             fig, ax = plt.subplots(figsize=(12, 6))
-            plot_task_gantt_chart(solution, problem_data, ax=ax)
+            plot_machine_gantt(solution, problem_data, ax=ax)
 
             # Improve the appearance
             ax.set_xlabel("Time (minutes)", fontsize=10)
