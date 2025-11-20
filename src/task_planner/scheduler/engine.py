@@ -193,7 +193,7 @@ class SchedulerEngine:
 
             # Reduce font size of task labels
             for text in ax.texts:
-                text.set_fontsize(5)
+                text.set_fontsize(8)
 
             # Improve the appearance
             ax.set_xlabel("Time (minutes)", fontsize=10)
